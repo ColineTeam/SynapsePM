@@ -5,8 +5,11 @@ use pocketmine\scheduler\AsyncTask;
 use pocketmine\scheduler\PluginTask;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
+use pocketmine\utils\UUID;
 use synapseapi\network\protocol\spp\SynapseDataPacket;
+use synapsepm\network\protocol\spp\BroadcastPacket;
 use synapsepm\network\protocol\spp\ConnectPacket;
+use synapsepm\network\protocol\spp\DisconnectPacket;
 use synapsepm\network\protocol\spp\HeartbeatPacket;
 use synapsepm\network\protocol\spp\SynapseInfo;
 use synapsepm\network\SynapseInterface;
@@ -55,7 +58,7 @@ class SynapseEntry {
         $this->getSynapse()->getServer()->getScheduler()->scheduleAsyncTask(new Ticker($this));
     }
 
-    public function getRandomString($lenght) {
+    public function getRandomString(int $lenght) {
         return base_convert(sha1(uniqid(mt_rand(), true)), 16, $lenght);
     }
 
@@ -119,11 +122,11 @@ class SynapseEntry {
         return $this->port;
     }
 
-    public function setPort($port) {
+    public function setPort(int $port) {
         $this->port = $port;
     }
 
-    public function broadcastPacket($players, SynapseDataPacket $packet, bool $direct) {
+    public function broadcastPacket($players, SynapseDataPacket $packet, bool $direct = false) {
         $packet->encode();
         $broadcastPacket = new BroadcastPacket();
         $broadcastPacket->direct = $direct;
@@ -174,6 +177,7 @@ class SynapseEntry {
         }
         $finalTime = microtime(true);
         $usedTime = $finalTime - $time;
+        $this->getSynapse()->getServer()->getLogger()->warning("time ConnectPacket ".$usedTime);
         if ((($finalTime) - $this->lastUpdate) >= 30000 && $this->synapseInterface->isConnected()) { //30 seconds timeout
             $this->synapseInterface->reconnect();
         }
@@ -181,7 +185,49 @@ class SynapseEntry {
     }
 
     public function removePlayer($player) {
-
+       // if($player instanceof SynapsePlayer) $uuid = $player->getUniqueId();
+        if (isset($this->players[$uuid = $player->getUniqueId()->toBinary()])) {
+            unset($this->players[$uuid]);
+        }
+        //TODO: разобрать зачем эта функция и где она используеться
+    }
+    public function handleDataPacket(SynapseDataPacket $pk){
+        switch ($pk->pid()){
+            case Info::DISCONNECT_PACKET:
+                /** @var DisconnectPacket $pk */
+                $this->verified = false;
+                switch ($pk->type) {
+                    case DisconnectPacket::TYPE_GENERIC:
+                        $this->getLogger()->notice('Synapse Client has disconnected due to ' . $pk->message);
+                        $this->interface->reconnect();
+                        break;
+                    case DisconnectPacket::TYPE_WRONG_PROTOCOL:
+                        $this->getLogger()->error($pk->message);
+                        break;
+                }
+                break;
+            case Info::INFORMATION_PACKET:
+                /** @var InformationPacket $pk */
+                switch ($pk->type) {
+                    case InformationPacket::TYPE_LOGIN:
+                        if ($pk->message === InformationPacket::INFO_LOGIN_SUCCESS) {
+                            $this->logger->info('Login success to ' . $this->serverIp . ':' . $this->port);
+                            $this->verified = true;
+                        }
+                        elseif ($pk->message === InformationPacket::INFO_LOGIN_FAILED) {
+                            $this->logger->info('Login failed to ' . $this->serverIp . ':' . $this->port);
+                        }
+                        break;
+                    case InformationPacket::TYPE_CLIENT_DATA:
+                        $this->clientData = json_decode($pk->message, true)['clientList'];
+                        $this->lastRecvInfo = microtime();
+                        break;
+//                    case InformationPacket::TYPE_PLUGIN_MESSAGE:
+//                        $this->server->getPluginManager()->callEvent(new SynapsePluginMessageReceiveEvent($this, $pk->message));
+//                        break;
+                }
+                break;
+        }
     }
 }
 
