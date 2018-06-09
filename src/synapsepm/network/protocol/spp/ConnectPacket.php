@@ -3,7 +3,7 @@ namespace synapsepm\network\protocol\spp;
 
 class ConnectPacket extends SynapseDataPacket {
 
-    public static $NETWORK_ID = SynapseInfo::CONNECT_PACKET;
+    const NETWORK_ID = SynapseInfo::CONNECT_PACKET;
     public $protocol = SynapseInfo::CURRENT_PROTOCOL;
     public $maxPlayers;
     public $isMainServer;
@@ -11,7 +11,7 @@ class ConnectPacket extends SynapseDataPacket {
     public $password;
 
     public function pid() {
-        return self::$NETWORK_ID;
+        return self::NETWORK_ID;
     }
 
     public function encode() {
