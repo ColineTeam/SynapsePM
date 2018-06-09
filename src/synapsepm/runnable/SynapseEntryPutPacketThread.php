@@ -52,7 +52,7 @@ class SynapseEntryPutPacketThread extends Thread {
 
                 } catch (\Exception $e) {
                     $this->synapseInterface->getSynapse()->getLogger()->alert("Catch exception when Synapse Entry Put Packet: " . $e->getMessage());
-                    $this->synapseInterface->getSynapse()->getLogger()->getLogger()->logException($e);
+                    $this->synapseInterface->getSynapse()->getLogger()->logException($e);
                 }
                 /*$tickUseTime = microtime() - $start;
                 if ($tickUseTime) {
