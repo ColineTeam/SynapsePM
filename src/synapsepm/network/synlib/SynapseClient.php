@@ -67,12 +67,62 @@ class SynapseClient extends Thread {
 		$this->connected = $con;
 	}
 
-	public function quit() {
-		$this->shutdown();
-		parent::quit();
-	}
+    public function getExternalQueue() {
+        return $this->externalQueue;
+    }
 
-	public function run() {
+    public function getInternalQueue() {
+        return $this->internalQueue;
+    }
+    public function isShutdown() {
+        return $this->shutdown === true;
+    }
+
+    public function shutdown() {
+        $this->shutdown = true;
+    }
+    public function getPort() {
+        return $this->port;
+    }
+
+    public function getInterface() {
+        return $this->interface;
+    }
+
+    /**
+     * @return \ThreadedLogger
+     */
+    public function getLogger() {
+        return $this->logger;
+    }
+    public function quit() {
+        $this->shutdown();
+        parent::quit();
+    }
+
+
+    public function pushMainToThreadPacket($str) {
+        $this->internalQueue[] = $str;
+    }
+
+    public function readMainToThreadPacket() {
+        return $this->internalQueue->shift();
+    }
+
+
+    public function pushThreadToMainPacket($str) {
+        $this->externalQueue[] = $str;
+    }
+
+    public function getInternalQueueSize() {
+        return count($this->internalQueue);
+    }
+
+    public function readThreadToMainPacket() {
+        return $this->externalQueue->shift();
+    }
+
+    public function run() {
 		$this->registerClassLoader();
 		gc_enable();
 //		error_reporting(-1);
@@ -153,56 +203,6 @@ class SynapseClient extends Thread {
 		return rtrim(str_replace(['\\', '.php', 'phar://', rtrim(str_replace(['\\', 'phar://'], ['/', ''], $this->mainPath), '/')], ['/', '', '', ''], $path), '/');
 	}
 
-	public function getExternalQueue() {
-		return $this->externalQueue;
-	}
-
-	public function getInternalQueue() {
-		return $this->internalQueue;
-	}
-
-	public function pushMainToThreadPacket($str) {
-		$this->internalQueue[] = $str;
-	}
-
-	public function readMainToThreadPacket() {
-		return $this->internalQueue->shift();
-	}
-
-	public function pushThreadToMainPacket($str) {
-		$this->externalQueue[] = $str;
-	}
-
-	public function getInternalQueueSize() {
-		return count($this->internalQueue);
-	}
-
-	public function readThreadToMainPacket() {
-		return $this->externalQueue->shift();
-	}
-
-	public function isShutdown() {
-		return $this->shutdown === true;
-	}
-
-	public function shutdown() {
-		$this->shutdown = true;
-	}
-
-	public function getPort() {
-		return $this->port;
-	}
-
-	public function getInterface() {
-		return $this->interface;
-	}
-
-	/**
-	 * @return \ThreadedLogger
-	 */
-	public function getLogger() {
-		return $this->logger;
-	}
 
 	public function isGarbage() : bool {
 		return parent::isGarbage();
