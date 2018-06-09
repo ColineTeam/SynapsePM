@@ -73,10 +73,10 @@ class AsyncTicker extends AsyncTask {
             if($this->tickUseTime < 10){
                 @time_sleep_until(10 - $this->tickUseTime);
             }elseif (microtime(true) - $this->lastWarning >= 5000){
-                Server::getInstance()->getLogger()->.warning("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
+                Server::getInstance()->getLogger()->warning("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
                 $this->lastWarning = microtime(true);
             }
-            $startTime = microtime(true); //по идеии она должна быть глобальной
+            $startTime = microtime(true);
         }
     }
 }
