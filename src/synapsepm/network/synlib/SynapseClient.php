@@ -104,12 +104,16 @@ class SynapseClient extends Thread {
         $this->registerClassLoader();
         register_shutdown_function([$this, 'shutdownHandler']);
         try {
-            $this->session = new Session($this);
+           // $this->session = new Session($this);
             $this->connect();
-            $this->session->run();
+            //$this->session->run();
         } catch (\Exception $e) {
             Server::getInstance()->getLogger()->logException($e);
         }
+    }
+    public function connect(){
+        $socket = new SynapseSocket($this->getLogger(), $this->port, $this->interface);
+        new ServerConnection($this, $socket);
     }
 
     public function getClientGroup() {
