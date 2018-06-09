@@ -2,7 +2,10 @@
 namespace synapsepm;
 
 use pocketmine\scheduler\AsyncTask;
+use pocketmine\scheduler\PluginTask;
+use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
+use synapseapi\network\protocol\spp\SynapseDataPacket;
 use synapsepm\network\SynapseInterface;
 use synapsepm\network\SynLibInterface;
 use synapsepm\SynapseAPI;
@@ -25,6 +28,7 @@ class SynapseEntry {
     /* @var ClientData $clientData */
     private $clientData;
     private $serverDescription;
+    private $playerLoginQueue = [], $playerLogoutQueue = [], $redirectPacketQueue = [];
 
     public function __construct(SynapseAPI $synapse, string $serverIp, int $port, bool $isMainServer, string $password, string $serverDescription) {
         $this->synapse = $synapse;
@@ -32,7 +36,7 @@ class SynapseEntry {
         $this->port = $port;
         $this->isMainServer = $isMainServer;
         $this->password = $password;
-        if(strlen($password) >= 16){
+        if (strlen($password) >= 16) {
             $this->synapse->getLogger()->warning("You must use a 16 bit length key!");
             $this->synapse->getLogger()->warning("This SynapseAPI Entry will not be enabled!");
             $enable = false;
@@ -44,14 +48,30 @@ class SynapseEntry {
 
         $this->lastUpdate = microtime(true);
         $this->lastRecvInfo = microtime(true);
-//        $this->getSynapse()->getServer()->getScheduler()->scheduleRepeatingTask(SynapseAPI::getInstance(), new);
-
+        $this->getSynapse()->getServer()->getScheduler()->scheduleRepeatingTask(new AsyncTicker($this), 1);
+        $this->getSynapse()->getServer()->getScheduler()->scheduleAsyncTask(new Ticker($this));
     }
-    
-    public function getRandomString($lenght){
+
+    public function getRandomString($lenght) {
         return base_convert(sha1(uniqid(mt_rand(), true)), 16, $lenght);
     }
-    
+
+    public function getSynapse(): SynapseAPI {
+        return $this->synapse;
+    }
+
+    public function isEnable() {
+        return $this->enable;
+    }
+
+    public function getClientData() {
+        $this->clientData;
+    }
+
+    public function getSynapseInterface() {
+        return $this->synapseInterface;
+    }
+
     public function shutdown() {
         if ($this->verified) {
             $pk = new DisconnectPacket();
@@ -60,40 +80,79 @@ class SynapseEntry {
             $this->sendDataPacket($pk);
             $this->getSynapse()->getLogger()->debug("Synapse client has disconnected from Synapse synapse");
             try {
-                sleep(100);
+                time_sleep_until(time() + 100);
             } catch (Exception $e) {
                 //ignore
             }
         }
         if ($this->synapseInterface != null) $this->synapseInterface->shutdown();
     }
-    
-    public function getSynapse(): SynapseAPI{
-        return $this->synapse;
+
+    public function getServerDescription() {
+        return $this->serverDescription;
     }
 
+    public function setServerDescription($serverDescription) {
+        $this->serverDescription = $serverDescription;
+    }
 
-    public function threadTick(){
+    public function sendDataPacket(SynapseDataPacket $pk) {
+        $this->synapseInterface->putPacket($pk);
+    }
+
+    public function setPassword($password) {
+        $this->password = $password;
+    }
+
+    public function getServerIp() {
+        return $this->serverIp;
+    }
+
+    public function setServerIp($serverIp) {
+        $this->serverIp = $serverIp;
+    }
+
+    public function getPort(): int {
+        return $this->port;
+    }
+
+    public function setPort($port) {
+        $this->port = $port;
+    }
+    public function broadcastPacket($players, SynapseDataPacket $packet, bool $direct){
+
+    }
+    public function isMainServer() {
+        return $this->isMainServer;
+    }
+
+    public function setMainServer(bool $mainServer) {
+        $this->isMainServer = $mainServer;
+    }
+
+    public function threadTick() {
         $this->synapseInterface;
     }
 }
-class AsyncTicker extends AsyncTask {
+
+class AsyncTicker extends PluginTask {
     public $tickUseTime;
     public $lastWarning = 0;
     /* @var SynapseEntry */
     public $entry;
+
     public function __construct(SynapseEntry $entry) {
         $this->entry = $entry;
     }
 
-    public function onRun() {
+    public function onRun(int $currentTick) {
         $startTime = microtime(true);
-        while (Server::getInstance()->isRunning()){
+        while (Server::getInstance()->isRunning()) {
             $this->entry->threadTick();
             $this->tickUseTime = microtime(true) - $startTime;
-            if($this->tickUseTime < 10){
+            if ($this->tickUseTime < 10) {
                 @time_sleep_until(10 - $this->tickUseTime);
-            }elseif (microtime(true) - $this->lastWarning >= 5000){
+            } elseif (microtime(true) - $this->lastWarning >= 5000) {
                 Server::getInstance()->getLogger()->warning("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
                 $this->lastWarning = microtime(true);
             }
@@ -101,6 +160,7 @@ class AsyncTicker extends AsyncTask {
         }
     }
 }
+
 class Ticker extends AsyncTask {
     public $tickUseTime;
     public $lastWarning = 0;
@@ -108,6 +168,7 @@ class Ticker extends AsyncTask {
     public function __construct(SynapseEntry $entry) {
         $this->entry = $entry;
     }
+
     public function onRun() {
 
     }
