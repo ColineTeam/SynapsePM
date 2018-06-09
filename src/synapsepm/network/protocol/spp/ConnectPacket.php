@@ -1,13 +1,9 @@
 <?php
-
 namespace synapsepm\network\protocol\spp;
 
-/**
- * Created by boybook on 16/6/24.
- */
 class ConnectPacket extends SynapseDataPacket {
 
-    public static final $NETWORK_ID = SynapseInfo::CONNECT_PACKET;
+    public static $NETWORK_ID = SynapseInfo::CONNECT_PACKET;
     public $protocol = SynapseInfo::CURRENT_PROTOCOL;
     public $maxPlayers;
     public $isMainServer;
