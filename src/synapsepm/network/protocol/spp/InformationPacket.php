@@ -12,6 +12,10 @@ class InformationPacket extends SynapseDataPacket {
     public $type;
     public $message;
 
+    public function pid() {
+        return self::NETWORK_ID;
+    }
+
     public function encode() {
         $this->reset();
         $this->putByte($this->type);

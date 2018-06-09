@@ -42,10 +42,10 @@ class SynapseEntry {
         $this->port = $port;
         $this->isMainServer = $isMainServer;
         $this->password = $password;
-        if (strlen($password) >= 16) {
+        if (mb_strlen($password) > 16) {
             $this->synapse->getLogger()->warning("You must use a 16 bit length key!");
             $this->synapse->getLogger()->warning("This SynapseAPI Entry will not be enabled!");
-            $enable = false;
+            $this->enable = false;
         }
         $this->serverDescription = $serverDescription;
 
@@ -55,7 +55,7 @@ class SynapseEntry {
         $this->lastUpdate = microtime(true);
         $this->lastRecvInfo = microtime(true);
         $this->getSynapse()->getServer()->getScheduler()->scheduleRepeatingTask(new AsyncTicker($this), 1);
-        $this->getSynapse()->getServer()->getScheduler()->scheduleAsyncTask(new Ticker($this));
+//        $this->getSynapse()->getServer()->getScheduler()->scheduleAsyncTask(new Ticker($this));
     }
 
     public function getRandomString(int $lenght) {
@@ -258,15 +258,15 @@ class AsyncTicker extends PluginTask {
     }
 }
 
-class Ticker extends AsyncTask {
-    public $tickUseTime;
-    public $lastWarning = 0;
-
-    public function __construct(SynapseEntry $entry) {
-        $this->entry = $entry;
-    }
-
-    public function onRun() {
-
-    }
-}
+//class Ticker extends AsyncTask {
+//    public $tickUseTime;
+//    public $lastWarning = 0;
+//
+//    public function __construct(SynapseEntry $entry) {
+//        $this->entry = $entry;
+//    }
+//
+//    public function onRun() {
+//
+//    }
+//}

@@ -11,6 +11,10 @@ class PlayerLogoutPacket extends SynapseDataPacket {
 	public $uuid;
 	public $reason;
 
+    public function pid() {
+        return self::NETWORK_ID;
+    }
+
 	public function encode() {
 		$this->reset();
 		$this->putUUID($this->uuid);

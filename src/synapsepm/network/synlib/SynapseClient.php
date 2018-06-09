@@ -79,8 +79,9 @@ class SynapseClient extends Thread {
     public function pushMainToThreadPacket(SynapseDataPacket $data) {
         $this->internalQueue[] = $data; //не понятно this.internalQueue.offer(data); добовляет в начало или конец списка
     }
-
+ 
     public function readMainToThreadPacket(): SynapseDataPacket {
+        var_dump($this->internalQueue);
         return array_shift($this->internalQueue);
     }
 

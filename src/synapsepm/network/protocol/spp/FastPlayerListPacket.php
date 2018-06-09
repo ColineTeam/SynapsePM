@@ -15,6 +15,9 @@ class FastPlayerListPacket extends SynapseDataPacket {
     public $entries = [];
     public $type;
 
+    public function pid() {
+        return self::NETWORK_ID;
+    }
     public function decode() {
     }
 

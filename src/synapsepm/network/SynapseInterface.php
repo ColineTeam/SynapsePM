@@ -2,7 +2,7 @@
 namespace synapsepm\network;
 
 use pocketmine\Server;
-use synapseapi\network\protocol\spp\SynapseDataPacket;
+use synapsepm\network\protocol\spp\{HeartbeatPacket, ConnectPacket, DisconnectPacket, SynapseInfo};
 use synapsepm\network\synlib\SynapseClient;
 use synapsepm\SynapseAPI;
 use synapsepm\SynapseEntry;
@@ -32,8 +32,8 @@ class SynapseInterface {
         }
         return null;
     }
-    public function registerPacket($id, SynapseDataPacket $packet){
-        $this->packetPool[$id] = $packet;
+    public function registerPacket($id, $class){
+        $this->packetPool[$id] = new $class;
     }
     public function getSynapse(){
         return $this->synapse;
@@ -75,6 +75,15 @@ class SynapseInterface {
     public function registerPackets(){
         $this->packetPool = new \SplFixedArray(256);
 
-        //packets
+        $this->registerPacket(SynapseInfo::HEARTBEAT_PACKET, HeartbeatPacket::class);
+        $this->registerPacket(SynapseInfo::CONNECT_PACKET, ConnectPacket::class);
+        $this->registerPacket(SynapseInfo::DISCONNECT_PACKET, DisconnectPacket::class);
+//        $this->registerPacket(SynapseInfo::REDIRECT_PACKET, RedirectPacket::class);
+//        $this->registerPacket(SynapseInfo::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
+//        $this->registerPacket(SynapseInfo::PLAYER_LOGOUT_PACKET, PlayerLogoutPacket::class);
+//        $this->registerPacket(SynapseInfo::INFORMATION_PACKET, InformationPacket::class);
+//        $this->registerPacket(SynapseInfo::TRANSFER_PACKET, TransferPacket::class);
+//        $this->registerPacket(SynapseInfo::BROADCAST_PACKET, BroadcastPacket::class);
+//        $this->registerPacket(SynapseInfo::FAST_PLAYER_LIST_PACKET, FastPlayerListPacket::class);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace synapseapi\network\protocol\spp;
+namespace synapsepm\network\protocol\spp;
 
 use pocketmine\utils\BinaryStream;
 

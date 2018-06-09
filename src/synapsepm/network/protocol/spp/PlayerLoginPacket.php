@@ -13,6 +13,10 @@ class PlayerLoginPacket extends SynapseDataPacket {
     public $isFirstTime;
     public $cachedLoginPacket;
 
+    public function pid() {
+        return self::NETWORK_ID;
+    }
+
     public function encode() {
         $this->reset();
         $this->putUUID($this->uuid);

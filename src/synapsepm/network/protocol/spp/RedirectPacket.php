@@ -10,6 +10,10 @@ class RedirectPacket extends SynapseDataPacket {
 	public $direct;
 	public $mcpeBuffer;
 
+    public function pid() {
+        return self::NETWORK_ID;
+    }
+
 	public function encode() {
 		$this->reset();
 		$this->putUUID($this->uuid);

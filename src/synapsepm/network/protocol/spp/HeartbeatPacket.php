@@ -8,6 +8,10 @@ class HeartbeatPacket extends SynapseDataPacket {
     public $load;
     public $upTime;
 
+    public function pid() {
+        return self::NETWORK_ID;
+    }
+
     public function encode() {
         $this->reset();
         $this->putFloat($this->tps);

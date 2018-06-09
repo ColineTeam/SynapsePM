@@ -12,6 +12,9 @@ class BroadcastPacket extends SynapseDataPacket {
 	public $direct;
 	public $payload;
 
+    public function pid() {
+        return self::NETWORK_ID;
+    }
 	public function encode() {
 		$this->reset();
 		$this->putBool($this->direct);
