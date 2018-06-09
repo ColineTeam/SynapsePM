@@ -48,6 +48,10 @@ class SynapseEntry {
 
     }
     
+    public function getRandomString($lenght){
+        return base_convert(sha1(uniqid(mt_rand(), true)), 16, $lenght);
+    }
+    
     public function shutdown() {
         if ($this->verified) {
             $pk = new DisconnectPacket();
