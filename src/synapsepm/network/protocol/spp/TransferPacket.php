@@ -5,12 +5,12 @@ use pocketmine\utils\UUID;
 
 class TransferPacket extends SynapseDataPacket {
 
-    public static $NETWORK_ID = SynapseInfo::TRANSFER_PACKET;
+    const NETWORK_ID = SynapseInfo::TRANSFER_PACKET;
     public $uuid;
     public $clientHash;
 
     public function pid() {
-        return self::$NETWORK_ID;
+        return self::NETWORK_ID;
     }
 
     public function encode() {
