@@ -1,3 +1,5 @@
+<?php
+
 namespace synapseapi\network\synlib;
 
 /**
