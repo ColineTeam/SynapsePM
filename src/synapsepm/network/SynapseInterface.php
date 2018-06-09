@@ -2,6 +2,7 @@
 namespace synapsepm\network;
 
 use pocketmine\Server;
+use synapseapi\network\protocol\spp\SynapseDataPacket;
 use synapsepm\network\synlib\SynapseClient;
 use synapsepm\SynapseAPI;
 use synapsepm\SynapseEntry;
@@ -31,8 +32,7 @@ class SynapseInterface {
         }
         return null;
     }
-    /* @var $packet - SynapseDataPacket*/
-    public function registerPacket($id, $packet){
+    public function registerPacket($id, SynapseDataPacket $packet){
         $this->packetPool[$id] = $packet;
     }
     public function getSynapse(){
@@ -44,8 +44,11 @@ class SynapseInterface {
     public function getPutPacketThread(){
         return $this->putPacketThread;
     }
-    public function putPacket($pk){
-
+    public function putPacket(SynapseDataPacket $pk){
+        if($pk->isEncoded){
+            $pk->encode();
+        }
+        $this->client->pushMainToThreadPacket($pk);
     }
     public function isConnected(){
         return $this->connected;
@@ -63,7 +66,7 @@ class SynapseInterface {
             $this->client->setNeedAuth(false);
         }
     }
-    public function handlePacket($pk){
+    public function handlePacket(SynapseDataPacket $pk){
         if($pk !== null){
             $pk->decode();
             $this->synapse->handleDataPacket($pk);
