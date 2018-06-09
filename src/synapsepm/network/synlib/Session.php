@@ -86,15 +86,15 @@ class Session {
     }
 
     public function getIp() {
-        return $ip;
+        return $this->ip;
     }
 
     public function getPort() {
-        return $port;
+        return $this->port;
     }
 
     public function getChannel() {
-        return $channel;
+        return $this->channel;
     }
 
     public function update(){
@@ -127,7 +127,7 @@ class Session {
     public function getTicksPerSecond() {
         $more = $this->tickUseTime - 10;
         if ($more < 0) return 100;
-        return round(10f / (float) $this->tickUseTime) * 100;
+        return round(10 / (float) $this->tickUseTime) * 100;
     }
 
 }
