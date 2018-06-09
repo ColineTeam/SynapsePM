@@ -1,6 +1,8 @@
 <?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/SynapseEntry.java
 namespace synapsepm;
 
+use pocketmine\scheduler\AsyncTask;
+use pocketmine\Server;
 use synapsepm\network\SynapseInterface;
 use synapsepm\network\SynLibInterface;
 use synapsepm\SynapseAPI;
@@ -49,4 +51,43 @@ class SynapseEntry {
         return $this->synapse;
     }
 
+
+    public function threadTick(){
+        $this->synapseInterface;
+    }
+}
+class AsyncTicker extends AsyncTask {
+    public $tickUseTime;
+    public $lastWarning = 0;
+    /* @var SynapseEntry */
+    public $entry;
+    public function __construct(SynapseEntry $entry) {
+        $this->entry = $entry;
+    }
+
+    public function onRun() {
+        $startTime = microtime(true);
+        while (Server::getInstance()->isRunning()){
+            $this->entry->threadTick();
+            $this->tickUseTime = microtime(true) - $startTime;
+            if($this->tickUseTime < 10){
+                @time_sleep_until(10 - $this->tickUseTime);
+            }elseif (microtime(true) - $this->lastWarning >= 5000){
+                Server::getInstance()->getLogger()->.warning("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
+                $this->lastWarning = microtime(true);
+            }
+            $startTime = microtime(true); //по идеии она должна быть глобальной
+        }
+    }
+}
+class Ticker extends AsyncTask {
+    public $tickUseTime;
+    public $lastWarning = 0;
+
+    public function __construct(SynapseEntry $entry) {
+        $this->entry = $entry;
+    }
+    public function onRun() {
+
+    }
 }
