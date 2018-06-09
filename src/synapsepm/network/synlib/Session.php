@@ -47,7 +47,7 @@ class Session {
             $this->tickUseTime = $time;
             if ($time < 10) {
                 try {
-                    sleep(10 - $time);
+                    @time_sleep_until(10 - $time);
                 } catch (Exception $e) {
                     //ignore
                 }
