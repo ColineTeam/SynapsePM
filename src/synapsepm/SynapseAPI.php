@@ -1,4 +1,4 @@
-<?php
+<?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/SynapseAPI.java
 namespace synapsepm;
 
 use pocketmine\plugin\PluginBase;
@@ -35,8 +35,8 @@ class SynapseAPI extends PluginBase {
             if($this->getConfig()->get('disable-rak')){
                 $this->getServer()->getPluginManager()->registerEvents(new DisableRakListener(), $this);
             }
-            $entries = $this->getConfig()['entries'];
-            foreach ($entries as $entry){
+            $entries = $this->getConfig()->get('synapses');
+            foreach (@$entries as $entry){
 
             }
         }

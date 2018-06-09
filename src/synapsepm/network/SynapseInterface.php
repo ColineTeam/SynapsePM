@@ -1,4 +1,4 @@
-<?php
+<?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/network/SynapseInterface.java
 namespace synapsepm\network;
 
 use pocketmine\Server;

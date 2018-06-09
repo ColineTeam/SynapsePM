@@ -1,11 +1,4 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: alexey
- * Date: 09.06.18
- * Time: 12:43
- */
-
+<?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/network/synlib/SynapseClient.java
 namespace synapsepm\network\synlib;
 
 

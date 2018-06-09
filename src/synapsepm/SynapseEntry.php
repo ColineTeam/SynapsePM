@@ -1,6 +1,8 @@
-<?php
+<?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/SynapseEntry.java
 namespace synapsepm;
 
+use synapsepm\network\SynapseInterface;
+use synapsepm\network\SynLibInterface;
 use synapsepm\SynapseAPI;
 
 class SynapseEntry {
@@ -14,8 +16,7 @@ class SynapseEntry {
     /* @var SynapseInterface $synapseInterface */
     private $synapseInterface;
     private $verified;
-    private $lastUpdate;
-    private $lastRecvInfo;
+    private $lastUpdate, $lastRecvInfo;
     private $players = [];
     /* @var SynLibInterface $synLibInterface */
     private $synLibInterface;
@@ -36,7 +37,16 @@ class SynapseEntry {
         }
         $this->serverDescription = $serverDescription;
 
-//        $this->synapseInterface = new SynapseInterface;
+        $this->synapseInterface = new SynapseInterface($this, $this->serverIp, $this->port);
+        $this->synLibInterface = new SynLibInterface($synapse);
+
+        $this->lastUpdate = microtime(true);
+        $this->lastRecvInfo = microtime(true);
+//        $this->getSynapse()->getServer()->getScheduler()->scheduleRepeatingTask(SynapseAPI::getInstance(), new);
+
+    }
+    public function getSynapse(): SynapseAPI{
+        return $this->synapse;
     }
 
 }
