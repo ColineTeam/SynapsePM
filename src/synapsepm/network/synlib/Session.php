@@ -21,7 +21,7 @@ class Session {
         $this->lastCheck = microtime(true);
     }
 
-    public function updateAddress(InetSocketAddress $address) {
+    public function updateAddress($address) {
         $this->ip = $address->getAddress()->getHostAddress();
         $this->port = $address->getPort();
     }
@@ -82,7 +82,7 @@ class Session {
     }
 
     public function getHash() {
-        return $this->getIp() + ":" + $this->getPort();
+        return $this->getIp() . ":" . $this->getPort();
     }
 
     public function getIp() {
