@@ -82,4 +82,7 @@ class SynapseAPI extends PluginBase {
             }
         }
     }
+    public function getMessenger(){
+        return $this->messenger;
+    }
 }
