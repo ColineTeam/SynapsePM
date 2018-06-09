@@ -144,7 +144,7 @@ class SynapseEntry {
     }
 
     public function getHash() {
-        return this . serverIp . ":" . this . port;
+        return $this->serverIp . ":" . $this->port;
     }
 
     public function connect() {
