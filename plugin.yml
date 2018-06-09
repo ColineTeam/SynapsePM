@@ -1,5 +1,5 @@
 name: SynapsePM
-main: synapsepm\SynapsePM
+main: synapsepm\SynapseAPI
 description: "Plugin based on https://github.com/iTXTech/SynapseAPI and https://github.com/iTXTech/SynapseAPI"
 author: ColineTeam
 version: 1.0
