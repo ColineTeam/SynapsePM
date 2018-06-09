@@ -47,6 +47,23 @@ class SynapseEntry {
 //        $this->getSynapse()->getServer()->getScheduler()->scheduleRepeatingTask(SynapseAPI::getInstance(), new);
 
     }
+    
+    public function shutdown() {
+        if ($this->verified) {
+            $pk = new DisconnectPacket();
+            $pk->type = DisconnectPacket::TYPE_GENERIC;
+            $pk->message = "Server closed";
+            $this->sendDataPacket($pk);
+            $this->getSynapse()->getLogger()->debug("Synapse client has disconnected from Synapse synapse");
+            try {
+                sleep(100);
+            } catch (Exception $e) {
+                //ignore
+            }
+        }
+        if ($this->synapseInterface != null) $this->synapseInterface->shutdown();
+    }
+    
     public function getSynapse(): SynapseAPI{
         return $this->synapse;
     }
