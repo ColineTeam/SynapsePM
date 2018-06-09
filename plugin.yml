@@ -1,0 +1,20 @@
+name: SynapsePM
+main: synapsepm\SynapsePM
+description: "Plugin based on https://github.com/iTXTech/SynapseAPI and https://github.com/iTXTech/SynapseAPI"
+author: ColineTeam
+version: 1.0
+api: 
+    - 3.0.0-ALPHA10
+    - 3.0.0-ALPHA11
+    - 3.0.0-ALPHA12
+    - 3.0.0-ALPHA13
+    - 3.0.0-ALPHA14
+    - 3.0.0-ALPHA15
+    - 3.0.0-ALPHA16
+    - 3.0.0-ALPHA17
+    - 3.0.0-ALPHA18
+    - 3.0.0-ALPHA19
+    - 3.0.0-ALPHA20
+    - 3.0.0-ALPHA21
+    - 3.0.0-ALPHA7
+load: STARTUP
