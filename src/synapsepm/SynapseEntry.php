@@ -6,6 +6,9 @@ use pocketmine\scheduler\PluginTask;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use synapseapi\network\protocol\spp\SynapseDataPacket;
+use synapsepm\network\protocol\spp\ConnectPacket;
+use synapsepm\network\protocol\spp\HeartbeatPacket;
+use synapsepm\network\protocol\spp\SynapseInfo;
 use synapsepm\network\SynapseInterface;
 use synapsepm\network\SynLibInterface;
 use synapsepm\SynapseAPI;
@@ -44,7 +47,7 @@ class SynapseEntry {
         $this->serverDescription = $serverDescription;
 
         $this->synapseInterface = new SynapseInterface($this, $this->serverIp, $this->port);
-        $this->synLibInterface = new SynLibInterface($synapse);
+        $this->synLibInterface = new SynLibInterface($this->synapseInterface);
 
         $this->lastUpdate = microtime(true);
         $this->lastRecvInfo = microtime(true);
@@ -119,17 +122,19 @@ class SynapseEntry {
     public function setPort($port) {
         $this->port = $port;
     }
-    public function broadcastPacket($players, SynapseDataPacket $packet, bool $direct){
+
+    public function broadcastPacket($players, SynapseDataPacket $packet, bool $direct) {
         $packet->encode();
         $broadcastPacket = new BroadcastPacket();
         $broadcastPacket->direct = $direct;
         $broadcastPacket->payload = $packet->getBuffer();
-        $broadcastPacket->entries = array();
-        for ($players as $player) {
+        $broadcastPacket->entries = [];
+        foreach ($players as $player) {
             $broadcastPacket->entries[] = $player->getUniqueId();
         }
         $this->sendDataPacket($broadcastPacket);
     }
+
     public function isMainServer() {
         return $this->isMainServer;
     }
@@ -138,16 +143,12 @@ class SynapseEntry {
         $this->isMainServer = $mainServer;
     }
 
-    public function threadTick() {
-        $this->synapseInterface;
+    public function getHash() {
+        return this . serverIp . ":" . this . port;
     }
-    
-     public function getHash() {
-        return $this->serverIp . ":" . $this->port;
-    }
-    
-     public function connect() {
-        $this->getSynapse()->getLogger()->notice("Connecting " . $this.getHash());
+
+    public function connect() {
+        $this->getSynapse()->getLogger()->notice("Connecting " . $this->getHash());
         $this->verified = false;
         $pk = new ConnectPacket();
         $pk->password = $this->password;
@@ -156,6 +157,31 @@ class SynapseEntry {
         $pk->maxPlayers = $this->getSynapse()->getServer()->getMaxPlayers();
         $pk->protocol = SynapseInfo::CURRENT_PROTOCOL;
         $this->sendDataPacket($pk);
+
+    }
+
+    public function threadTick() {
+        $this->synapseInterface->process();
+        if (!$this->synapseInterface->isConnected() || $this->verified) return;
+        $time = microtime(true);
+        if ($time - $this->lastUpdate >= 5000) {//Heartbeat!
+            $this->lastUpdate = $time;
+            $pk = new HeartbeatPacket();
+            $pk->tps = $this->getSynapse()->getServer()->getTicksPerSecondAverage();
+            $pk->load = $this->getSynapse()->getServer()->getTickUsageAverage();
+            $pk->upTime = (microtime(true) - \pocketmine\START_TIME) / 1000;
+            $this->sendDataPacket($pk);
+        }
+        $finalTime = microtime(true);
+        $usedTime = $finalTime - $time;
+        if ((($finalTime) - $this->lastUpdate) >= 30000 && $this->synapseInterface->isConnected()) { //30 seconds timeout
+            $this->synapseInterface->reconnect();
+        }
+
+    }
+
+    public function removePlayer($player) {
+
     }
 }
 
@@ -166,6 +192,7 @@ class AsyncTicker extends PluginTask {
     public $entry;
 
     public function __construct(SynapseEntry $entry) {
+        $this->owner = $entry->getSynapse();
         $this->entry = $entry;
     }
 

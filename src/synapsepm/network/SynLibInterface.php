@@ -1,14 +1,15 @@
-<?php //complete https://github.com/iTXTech/SynapsePM/blob/master/src/synapsepm/network/SynLibInterface.php
+<?php //complete https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/network/SynLibInterface.java
 namespace synapsepm\network;
 
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\SourceInterface;
+use synapsepm\network\SynapseInterface;
 use pocketmine\Player;
 
 class SynLibInterface implements SourceInterface {
     private $synapseInterface;
 
-    public function __construct(SourceInterface $synapseInterface){
+    public function __construct(SynapseInterface $synapseInterface){
         $this->synapseInterface = $synapseInterface;
     }
     public function getNetworkLatency(Player $player) {
@@ -28,5 +29,6 @@ class SynLibInterface implements SourceInterface {
     }
     public function shutdown() {
     }
+    public function start(){}
 
 }
