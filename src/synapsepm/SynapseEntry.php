@@ -120,7 +120,15 @@ class SynapseEntry {
         $this->port = $port;
     }
     public function broadcastPacket($players, SynapseDataPacket $packet, bool $direct){
-
+        $packet->encode();
+        $broadcastPacket = new BroadcastPacket();
+        $broadcastPacket->direct = $direct;
+        $broadcastPacket->payload = $packet->getBuffer();
+        $broadcastPacket->entries = array();
+        for ($players as $player) {
+            $broadcastPacket->entries[] = $player->getUniqueId();
+        }
+        $this->sendDataPacket($broadcastPacket);
     }
     public function isMainServer() {
         return $this->isMainServer;
@@ -132,6 +140,22 @@ class SynapseEntry {
 
     public function threadTick() {
         $this->synapseInterface;
+    }
+    
+     public function getHash() {
+        return $this->serverIp . ":" . $this->port;
+    }
+    
+     public function connect() {
+        $this->getSynapse()->getLogger()->notice("Connecting " . $this.getHash());
+        $this->verified = false;
+        $pk = new ConnectPacket();
+        $pk->password = $this->password;
+        $pk->isMainServer = $this->isMainServer();
+        $pk->description = $this->serverDescription;
+        $pk->maxPlayers = $this->getSynapse()->getServer()->getMaxPlayers();
+        $pk->protocol = SynapseInfo::CURRENT_PROTOCOL;
+        $this->sendDataPacket($pk);
     }
 }
 
