@@ -37,19 +37,11 @@ class SynLibInterface implements SourceInterface {
     }
 
     public function putPacket(Player $player, DataPacket $packet, bool $needACK = false, bool $immediate = true) {
-        if ($player->isClosed()) {
-            $pk = new RedirectPacket();
-            $pk->uuid = $player->getUniqueId();
-            $pk->direct = $immediate;
-            if (!$packet->isEncoded) {
-                $packet->encode();
-            }
-            $pk->mcpeBuffer = $packet->buffer;
-            $this->synapseInterface->putPacket($pk);
-        }
+        $this->synapseInterface->getPutPacketThread()->addMainToThread($player, $packet, $needACK, $immediate);
         return null;
     }
 
     public function shutdown() {
     }
+    public function start(){}
 }

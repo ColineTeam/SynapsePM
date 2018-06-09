@@ -43,6 +43,9 @@ class SynapsePM extends PluginBase {
 		}
 	}
 
+    public function isAutoCompress() {
+        return true;
+    }
 	/**
 	 * Add the synapse to the synapses list
 	 *

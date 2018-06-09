@@ -5,7 +5,7 @@ use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\Thread;
-use synapsepm\network\protocol\spp\DataPacket;
+use \pocketmine\network\mcpe\protocol\DataPacket;
 use synapsepm\network\protocol\spp\RedirectPacket;
 use synapsepm\network\SynapseInterface;
 
@@ -18,7 +18,7 @@ class SynapseEntryPutPacketThread extends Thread {
     private $tickUseTime = 0;
     private $isRunning = true;
 
-    public function SynapseEntryPutPacketThread(SynapseInterface $synapseInterface) {
+    public function __construct(SynapseInterface $synapseInterface) {
 //    super("SynapseEntryPutPacketThread");
         $this->synapseInterface = $synapseInterface;
         $this->isAutoCompress = true;
@@ -26,7 +26,8 @@ class SynapseEntryPutPacketThread extends Thread {
     }
 
     public function addMainToThread(Player $player, DataPacket $packet, bool $needACK, bool $immediate) {
-        $this->queue[] = (object)['player' => $player, 'packet' => $packet, 'needACK' => $needACK, 'immediate' => $immediate];
+       // $this->queue[] = (object)['player' => $player, 'packet' => $packet, 'needACK' => $needACK, 'immediate' => $immediate];
+        $this->queue[] = new Entry($player, $packet, $needACK, $immediate);
     }
 
     public function run() {
@@ -50,8 +51,8 @@ class SynapseEntryPutPacketThread extends Thread {
                     }
 
                 } catch (\Exception $e) {
-                    Server::getInstance()->getLogger()->alert("Catch exception when Synapse Entry Put Packet: " . $e->getMessage());
-                    Server::getInstance()->getLogger()->logException($e);
+                    $this->synapseInterface->getSynapse()->getLogger()->alert("Catch exception when Synapse Entry Put Packet: " . $e->getMessage());
+                    $this->synapseInterface->getSynapse()->getLogger()->getLogger()->logException($e);
                 }
                 /*$tickUseTime = microtime() - $start;
                 if ($tickUseTime) {
@@ -69,7 +70,7 @@ class Entry {
     private $needACK;
     private $immediate;
 
-    public function __construct(Player $player, DataPacket $packet, boolean $needACK, boolean $immediate) {
+    public function __construct(Player $player, DataPacket $packet, bool $needACK, bool $immediate) {
         $this->player = $player;
         $this->packet = $packet;
         $this->needACK = $needACK;
