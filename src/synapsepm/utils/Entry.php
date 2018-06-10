@@ -1,5 +1,7 @@
 <?php
 
+namespace synapsepm\utils;
+
 class Entry {
     private $ip;
     private $port;
