@@ -22,7 +22,7 @@ class TransferRunnable extends Task{
     public function run($currentTick) {
         $pk = new TransferPacket();
         $pk->uuid = $this->player->getUniqueId();
-        $pk->clientHash = $hash;
+        $pk->clientHash = $this->hash;
         $this->player->getSynapseEntry()->sendDataPacket($pk);
     }
 }
