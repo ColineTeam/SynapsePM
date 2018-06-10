@@ -20,6 +20,6 @@ public class SynapsePlayerConnectEvent extends SynapsePlayerEvent implements Can
     }
 
     public function isFirstTime() {
-        return $firstTime;
+        return $this->firstTime;
     }
 }
