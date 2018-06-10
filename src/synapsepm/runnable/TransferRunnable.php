@@ -4,12 +4,12 @@ namespace synapsepm\runnable;
 
 use synapsepm\SynapsePlayer;
 use synapsepm\network\protocol\spp\TransferPacket;
-use pocketmine\scheduler\PluginTask
+use pocketmine\scheduler\Task
 
 /**
  * Created by boybook on 16/9/26.
  */
-class TransferRunnable extends PluginTask{
+class TransferRunnable extends Task{
 
     private $player;
     private $hash;
@@ -19,7 +19,7 @@ class TransferRunnable extends PluginTask{
         $this->hash = $hash;
     }
     
-    public function run() {
+    public function run($currentTick) {
         $pk = new TransferPacket();
         $pk->uuid = $this->player->getUniqueId();
         $pk->clientHash = $hash;
