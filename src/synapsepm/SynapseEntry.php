@@ -56,7 +56,7 @@ class SynapseEntry {
         $this->lastUpdate = microtime(true);
         $this->lastRecvInfo = microtime(true);
 
-        $notifier =new SleeperNotifier();
+        $notifier = new SleeperNotifier();
         $this->getSynapse()->getServer()->getTickSleeper()->addNotifier($notifier, function() : void{
             $this->threadTick();
         });
