@@ -15,12 +15,12 @@ class SynapseProtocolHeader {
     /**
      * Head Length
      */
-    public static final $HEAD_LENGTH = 7;
+    const HEAD_LENGTH = 7;
 
     /**
      * Magic
      */
-    public static final $MAGIC = 0xbabe;
+    const MAGIC = 0xbabe;
 
     private $pid;
     private $bodyLength;
