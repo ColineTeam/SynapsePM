@@ -11,7 +11,7 @@ use synapsepm\event\SynapseEvent;
  */
 public class SynapsePlayerCreationEvent extends SynapseEvent {
 
-    public static handlerList = null;
+    public static $handlerList = null;
     private $interfaz;
     private $clientId;
     private $address;
