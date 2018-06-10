@@ -15,7 +15,7 @@ class Session {
     private $connected;
     private $tickUseTime = 0;
 
-    public function Session(SynapseClient $client) {
+    public function __construct(SynapseClient $client) {
         $this->client = $client;
         $this->connected = true;
         $this->lastCheck = microtime(true);
