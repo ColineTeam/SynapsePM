@@ -1,6 +1,6 @@
 <?php
 
-namespace synapseapi\event;
+namespace synapsepm\event;
 
 use pocketmine\event\Event;
 
