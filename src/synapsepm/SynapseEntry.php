@@ -1,8 +1,7 @@
 <?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/SynapseEntry.java
 namespace synapsepm;
 
-use pocketmine\scheduler\AsyncTask;
-use pocketmine\scheduler\PluginTask;
+use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use pocketmine\utils\UUID;
@@ -15,6 +14,8 @@ use synapsepm\network\protocol\spp\SynapseInfo;
 use synapsepm\network\SynapseInterface;
 use synapsepm\network\SynLibInterface;
 use synapsepm\SynapseAPI;
+use \pocketmine\snooze\SleeperNotifier;
+
 
 class SynapseEntry {
     /* @var SynapseAPI $synapse */
@@ -54,8 +55,14 @@ class SynapseEntry {
 
         $this->lastUpdate = microtime(true);
         $this->lastRecvInfo = microtime(true);
-        $this->getSynapse()->getServer()->getScheduler()->scheduleRepeatingTask(new AsyncTicker($this), 1);
-//        $this->getSynapse()->getServer()->getScheduler()->scheduleAsyncTask(new Ticker($this));
+
+        $notifier =new SleeperNotifier();
+        $this->getSynapse()->getServer()->getTickSleeper()->addNotifier($notifier, function() : void{
+            $this->threadTick();
+        });
+        $thread = new AsyncTicker($notifier);
+        $thread->start();
+        $this->getSynapse()->getScheduler()->scheduleRepeatingTask(new Ticker($this), 1);
     }
 
     public function getRandomString(int $lenght) {
@@ -177,7 +184,7 @@ class SynapseEntry {
         }
         $finalTime = microtime(true);
         $usedTime = $finalTime - $time;
-        $this->getSynapse()->getServer()->getLogger()->warning("time ConnectPacket ".$usedTime);
+        $this->getSynapse()->getServer()->getLogger()->warning("time ConnectPacket " . $usedTime);
         if ((($finalTime) - $this->lastUpdate) >= 30000 && $this->synapseInterface->isConnected()) { //30 seconds timeout
             $this->synapseInterface->reconnect();
         }
@@ -185,14 +192,15 @@ class SynapseEntry {
     }
 
     public function removePlayer($player) {
-       // if($player instanceof SynapsePlayer) $uuid = $player->getUniqueId();
+        // if($player instanceof SynapsePlayer) $uuid = $player->getUniqueId();
         if (isset($this->players[$uuid = $player->getUniqueId()->toBinary()])) {
             unset($this->players[$uuid]);
         }
         //TODO: разобрать зачем эта функция и где она используеться
     }
-    public function handleDataPacket(SynapseDataPacket $pk){
-        switch ($pk->pid()){
+
+    public function handleDataPacket(SynapseDataPacket $pk) {
+        switch ($pk->pid()) {
             case Info::DISCONNECT_PACKET:
                 /** @var DisconnectPacket $pk */
                 $this->verified = false;
@@ -213,8 +221,7 @@ class SynapseEntry {
                         if ($pk->message === InformationPacket::INFO_LOGIN_SUCCESS) {
                             $this->logger->info('Login success to ' . $this->serverIp . ':' . $this->port);
                             $this->verified = true;
-                        }
-                        elseif ($pk->message === InformationPacket::INFO_LOGIN_FAILED) {
+                        } elseif ($pk->message === InformationPacket::INFO_LOGIN_FAILED) {
                             $this->logger->info('Login failed to ' . $this->serverIp . ':' . $this->port);
                         }
                         break;
@@ -231,42 +238,43 @@ class SynapseEntry {
     }
 }
 
-class AsyncTicker extends PluginTask {
+class AsyncTicker extends  \Thread {
     public $tickUseTime;
     public $lastWarning = 0;
     /* @var SynapseEntry */
-    public $entry;
+    public $notifier;
 
-    public function __construct(SynapseEntry $entry) {
-        $this->owner = $entry->getSynapse();
-        $this->entry = $entry;
+    public function __construct(SleeperNotifier $notifier) {
+        $this->notifier = $notifier;
     }
 
-    public function onRun(int $currentTick) {
+    public function run() {
         $startTime = microtime(true);
-        while (Server::getInstance()->isRunning()) {
-            $this->entry->threadTick();
+        while (true) {
+//            $this->entry->threadTick();
             $this->tickUseTime = microtime(true) - $startTime;
             if ($this->tickUseTime < 10) {
-                @time_sleep_until(10 - $this->tickUseTime);
+                @sleep(10 - $this->tickUseTime);
             } elseif (microtime(true) - $this->lastWarning >= 5000) {
-                Server::getInstance()->getLogger()->warning("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
+                print_r("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
                 $this->lastWarning = microtime(true);
             }
             $startTime = microtime(true);
+            $this->notifier->wakeupSleeper();
         }
     }
 }
 
-//class Ticker extends AsyncTask {
-//    public $tickUseTime;
-//    public $lastWarning = 0;
-//
-//    public function __construct(SynapseEntry $entry) {
-//        $this->entry = $entry;
-//    }
-//
-//    public function onRun() {
-//
-//    }
-//}
+class Ticker extends Task {
+    public $tickUseTime;
+    public $lastWarning = 0;
+
+    public function __construct(SynapseEntry $entry) {
+        //$this->entry = $entry;
+    }
+
+    public function onRun(int $currentTick) {
+
+    }
+
+}
