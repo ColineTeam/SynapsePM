@@ -4,7 +4,7 @@ namespace synapsepm\runnable;
 
 use synapsepm\SynapsePlayer;
 use synapsepm\network\protocol\spp\TransferPacket;
-use pocketmine\scheduler\Task
+use pocketmine\scheduler\Task;
 
 /**
  * Created by boybook on 16/9/26.
