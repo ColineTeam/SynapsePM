@@ -5,7 +5,7 @@ namespace synapsepm\event\player;
 use pocketmine\event\Cancellable;
 use pocketmine\event\HandlerList;
 use synapsepm\SynapsePlayer;
-use synapsepm\utils\ClientData\Entry;
+use synapsepm\utils\Entry;
 
 /**
  * @author CreeperFace
