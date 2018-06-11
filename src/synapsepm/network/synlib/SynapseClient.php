@@ -31,7 +31,9 @@ class SynapseClient extends Thread {
     public function reconnect() {
         $this->needReconnect = true;
     }
-
+    public function isNeedAuth(): bool{
+        return $this->isNeedAuth();
+    }
     public function setNeedAuth(bool $needAuth) {
         $this->needAuth = $needAuth;
     }
@@ -80,9 +82,9 @@ class SynapseClient extends Thread {
         $this->internalQueue[] = $data; //не понятно this.internalQueue.offer(data); добовляет в начало или конец списка
     }
  
-    public function readMainToThreadPacket(): SynapseDataPacket {
-        var_dump($this->internalQueue);
-        return array_shift($this->internalQueue);
+    public function readMainToThreadPacket() {
+//        var_dump($this->internalQueue);
+        return @array_shift($this->internalQueue);
     }
 
     public function getInternalQueueSize() {
@@ -93,8 +95,8 @@ class SynapseClient extends Thread {
         $this->externalQueue[] = $data;
     }
 
-    public function readThreadToMainPacket(): SynapseDataPacket {
-        return array_shift($this->externalQueue);
+    public function readThreadToMainPacket(){
+        return @array_shift($this->externalQueue);
     }
 
     public function getSession() {
@@ -113,7 +115,7 @@ class SynapseClient extends Thread {
         }
     }
     public function connect(){
-        $socket = new SynapseSocket($this->getLogger(), $this->port, $this->interface);
+        $socket = new SynapseSocket($this->getLogger(), $this->port, $this->interfaz);
         new ServerConnection($this, $socket);
     }
 
