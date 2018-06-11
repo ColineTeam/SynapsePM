@@ -55,13 +55,15 @@ class SynapseEntry {
 
         $this->lastUpdate = microtime(true);
         $this->lastRecvInfo = microtime(true);
+        $sleeper = $this->getSynapse()->getServer()->getTickSleeper();
 
-        $notifier = new SleeperNotifier();
-        $this->getSynapse()->getServer()->getTickSleeper()->addNotifier($notifier, function() : void{
-            $this->threadTick();
+        $sleeper->addNotifier($notifier = new \pocketmine\snooze\SleeperNotifier(), function (): void {
+           $this->threadTick();
         });
+
         $thread = new AsyncTicker($notifier);
         $thread->start();
+
         $this->getSynapse()->getScheduler()->scheduleRepeatingTask(new Ticker($this), 1);
     }
 
@@ -238,30 +240,52 @@ class SynapseEntry {
     }
 }
 
-class AsyncTicker extends  \Thread {
-    public $tickUseTime;
-    public $lastWarning = 0;
-    /* @var SynapseEntry */
-    public $notifier;
+//class SleepyThread extends \pocketmine\Thread{
+//    private $notifier;
+//
+//    public function __construct(\pocketmine\snooze\SleeperNotifier $notifier){
+//        $this->notifier = $notifier;
+//    }
+//
+//    public function run() : void{
+//        while(true){
+//            //do some work
+//            sleep(5);
+//
+//            //send a notification to the main thread
+//            //the parent thread doesn't have to be sleeping to receive this, it'll process it next time it tries to go
+//            //back to sleep
+//            //if the parent thread is sleeping, it'll be woken up to process notifications immediately.
+//            $this->notifier->wakeupSleeper();
+//        }
+//    }
+//}
+
+class AsyncTicker extends \pocketmine\Thread {
+    public $notifier, $lastWarning = 0;
 
     public function __construct(SleeperNotifier $notifier) {
         $this->notifier = $notifier;
     }
 
     public function run() {
-        $startTime = microtime(true);
+
         while (true) {
+            $startTime = microtime(true);
 //            $this->entry->threadTick();
-            $this->tickUseTime = microtime(true) - $startTime;
+            $this->notifier->wakeupSleeper();
+            $tickUseTime = microtime(true) - $startTime;
             if ($this->tickUseTime < 10) {
-                @sleep(10 - $this->tickUseTime);
+                echo 10 - $tickUseTime;
+                sleep(10 - $tickUseTime);
             } elseif (microtime(true) - $this->lastWarning >= 5000) {
                 print_r("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
                 $this->lastWarning = microtime(true);
             }
-            $startTime = microtime(true);
-            $this->notifier->wakeupSleeper();
+//            $startTime = microtime(true);
+
         }
+
     }
 }
 
