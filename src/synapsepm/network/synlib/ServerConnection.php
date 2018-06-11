@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace synapsepm\network\synlib;
 
 use pocketmine\utils\Binary;
+use synapsepm\network\protocol\spp\SynapseDataPacket;
 use synapsepm\network\protocol\spp\SynapseInfo;
+use synapsepm\utils\Util;
 
 
 class ServerConnection {
@@ -57,8 +59,7 @@ class ServerConnection {
                 $this->server->pushThreadToMainPacket($packet);
             }
         }
-        while (($packet = $this->server->readMainToThreadPacket()) !== null && strlen($packet) !== 0) {
-            var_dump($packet);
+        while (($packet = $this->server->readMainToThreadPacket()) !== null) {
             $this->writePacket($packet);
         }
     }
@@ -128,7 +129,7 @@ class ServerConnection {
                     break;
                 }
                 $magic = Binary::readShort(substr($this->receiveBuffer, $offset, 2));
-                if ($magic !== Info::PROTOCOL_MAGIC) {
+                if ($magic !== SynapseInfo::PROTOCOL_MAGIC) {
                     throw new \RuntimeException('Magic does not match.');
                 }
                 $pid = $this->receiveBuffer{$offset + 2};
@@ -154,8 +155,10 @@ class ServerConnection {
         return $packets;
     }
 
-    public function writePacket($data) {
-        @socket_write($this->socket->getSocket(), Binary::writeShort(Info::PROTOCOL_MAGIC));
+    public function writePacket(SynapseDataPacket $pk) {
+        $pk->encode();
+        $data = $pk->buffer;
+        @socket_write($this->socket->getSocket(), Binary::writeShort(SynapseInfo::PROTOCOL_MAGIC));
         @socket_write($this->socket->getSocket(), $data{0});
         @socket_write($this->socket->getSocket(), Binary::writeInt(strlen($data) - 1));
         @socket_write($this->socket->getSocket(), substr($data, 1));

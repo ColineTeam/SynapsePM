@@ -87,7 +87,10 @@ class SynapseClient extends Thread {
     }
 
     public function readMainToThreadPacket() {
-        return @array_shift($this->internalQueue);
+//        if($this->internalQueue[0]) var_dump($this->internalQueue);
+        $result = $this->internalQueue[count($this->internalQueue) -1];
+        unset($this->internalQueue[count($this->internalQueue) -1]);
+        return $result;
 
     }
 
@@ -96,7 +99,6 @@ class SynapseClient extends Thread {
     }
 
     public function pushThreadToMainPacket(SynapseDataPacket $data) {
-        var_dump($data);
         $this->externalQueue[] = $data;
     }
 
