@@ -1,6 +1,6 @@
 <?php
 
-namespace synapseapi\utils;
+namespace synapsepm\utils;
 
 /**
  * Created by boybook on 16/6/25.
