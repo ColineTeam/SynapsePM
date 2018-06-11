@@ -1,6 +1,6 @@
 <?php
 
-namespace synapseapi\network\synlib;
+namespace synapsepm\network\synlib;
 
 /**
  * SynapseProtocolHeader
