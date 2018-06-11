@@ -174,11 +174,11 @@ class SynapseEntry {
 
     public function threadTick() {
         $this->synapseInterface->process();
-        var_dump($this->synapseInterface->isConnected() );
+//        var_dump($this->synapseInterface->isConnected() );
         if (!$this->synapseInterface->isConnected() || $this->verified) return;
         $time = microtime(true);
         var_dump($time - $this->lastUpdate);
-        if ($time - $this->lastUpdate >= 5000) {//Heartbeat!
+        if ($time - $this->lastUpdate >= 5) {//Heartbeat!
             $this->lastUpdate = $time;
             $pk = new HeartbeatPacket();
             $pk->tps = $this->getSynapse()->getServer()->getTicksPerSecondAverage();
@@ -189,7 +189,7 @@ class SynapseEntry {
         $finalTime = microtime(true);
         $usedTime = $finalTime - $time;
         $this->getSynapse()->getServer()->getLogger()->warning("time ConnectPacket " . $usedTime);
-        if ((($finalTime) - $this->lastUpdate) >= 30000 && $this->synapseInterface->isConnected()) { //30 seconds timeout
+        if ((($finalTime) - $this->lastUpdate) >= 30 && $this->synapseInterface->isConnected()) { //30 seconds timeout
             $this->synapseInterface->reconnect();
         }
 

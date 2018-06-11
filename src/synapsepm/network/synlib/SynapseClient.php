@@ -17,7 +17,7 @@ class SynapseClient extends Thread {
     private $clientGroup;
     private $session;
 
-    public function __construct($logger, int $port, string $interfaz,  SleeperNotifier $notifier) {
+    public function __construct($logger, int $port, string $interfaz, SleeperNotifier $notifier) {
         $this->logger = $logger;
         $this->interfaz = $interfaz;
         $this->port = $port;
@@ -32,9 +32,11 @@ class SynapseClient extends Thread {
     public function reconnect() {
         $this->needReconnect = true;
     }
-    public function isNeedAuth(): bool{
+
+    public function isNeedAuth(): bool {
         return $this->needAuth;
     }
+
     public function setNeedAuth(bool $needAuth) {
         $this->needAuth = $needAuth;
     }
@@ -44,7 +46,6 @@ class SynapseClient extends Thread {
     }
 
     public function setConnected(bool $connected) {
-        var_dump($connected);
         $this->connected = $connected;
     }
 
@@ -81,15 +82,13 @@ class SynapseClient extends Thread {
     }
 
     public function pushMainToThreadPacket(SynapseDataPacket $data) {
-       var_dump($data);
+       // var_dump($data);
         $this->internalQueue[] = $data; //не понятно this.internalQueue.offer(data); добовляет в начало или конец списка
     }
- 
+
     public function readMainToThreadPacket() {
-        if (is_array($this->internalQueue)){
-//            var_dump($this->internalQueue);
-            return @array_shift($this->internalQueue);
-        }
+        return @array_shift($this->internalQueue);
+
     }
 
     public function getInternalQueueSize() {
@@ -97,10 +96,11 @@ class SynapseClient extends Thread {
     }
 
     public function pushThreadToMainPacket(SynapseDataPacket $data) {
+        var_dump($data);
         $this->externalQueue[] = $data;
     }
 
-    public function readThreadToMainPacket(){
+    public function readThreadToMainPacket() {
         return @array_shift($this->externalQueue);
     }
 
@@ -112,7 +112,7 @@ class SynapseClient extends Thread {
         $this->registerClassLoader();
         register_shutdown_function([$this, 'shutdownHandler']);
         try {
-           // $this->session = new Session($this);
+            // $this->session = new Session($this);
             $this->connect();
             //$this->notifier->wakeupSleeper();
             //$this->session->run();
@@ -120,7 +120,8 @@ class SynapseClient extends Thread {
             Server::getInstance()->getLogger()->logException($e);
         }
     }
-    public function connect(){
+
+    public function connect() {
         $socket = new SynapseSocket($this->getLogger(), $this->port, $this->interfaz);
         new ServerConnection($this, $socket);
     }

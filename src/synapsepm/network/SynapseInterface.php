@@ -60,15 +60,14 @@ class SynapseInterface {
         return $this->client->isConnected();
     }
     public function process(){
-        $pk = $this->client->readMainToThreadPacket();
-        while ($pk !== null){
-            $this->handlePacket($pk);
-            $pk = $this->client->readMainToThreadPacket();
-        }
+//        $pk = $this->client->readMainToThreadPacket();
+//        while ($pk !== null){
+//            $this->handlePacket($pk);
+//            $pk = $this->client->readMainToThreadPacket();
+//        }
 
         $this->connected = $this->client->isConnected();
-        if(!$this->connected && $this->client->isNeedAuth()){
-            echo 'conect';
+        if($this->connected && $this->client->isNeedAuth()){
             $this->synapse->connect();
             $this->client->setNeedAuth(false);
         }

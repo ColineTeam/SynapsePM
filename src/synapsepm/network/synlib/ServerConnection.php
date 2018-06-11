@@ -27,6 +27,7 @@ class ServerConnection {
 
         $this->lastCheck = microtime(true);
         $this->connected = true;
+        $this->server->setConnected(true);
 
         $this->run();
     }
@@ -57,6 +58,7 @@ class ServerConnection {
             }
         }
         while (($packet = $this->server->readMainToThreadPacket()) !== null && strlen($packet) !== 0) {
+            var_dump($packet);
             $this->writePacket($packet);
         }
     }
@@ -100,6 +102,7 @@ class ServerConnection {
                     @socket_getpeername($this->socket->getSocket(), $address, $port);
                     $this->ip = $address;
                     $this->port = $port;
+                    var_dump('looooooooool');
                     $this->server->setConnected(true);
                     $this->server->setNeedAuth(true);
                 }
