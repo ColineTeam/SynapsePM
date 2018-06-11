@@ -5,7 +5,7 @@ use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use pocketmine\utils\UUID;
-use synapseapi\network\protocol\spp\SynapseDataPacket;
+use synapsepm\network\protocol\spp\SynapseDataPacket;
 use synapsepm\network\protocol\spp\BroadcastPacket;
 use synapsepm\network\protocol\spp\ConnectPacket;
 use synapsepm\network\protocol\spp\DisconnectPacket;
@@ -174,8 +174,10 @@ class SynapseEntry {
 
     public function threadTick() {
         $this->synapseInterface->process();
+        var_dump($this->synapseInterface->isConnected() );
         if (!$this->synapseInterface->isConnected() || $this->verified) return;
         $time = microtime(true);
+        var_dump($time - $this->lastUpdate);
         if ($time - $this->lastUpdate >= 5000) {//Heartbeat!
             $this->lastUpdate = $time;
             $pk = new HeartbeatPacket();
@@ -276,7 +278,7 @@ class AsyncTicker extends \pocketmine\Thread {
             $this->notifier->wakeupSleeper();
             $tickUseTime = microtime(true) - $startTime;
             if ($this->tickUseTime < 10) {
-                echo 10 - $tickUseTime;
+//                echo 10 - $tickUseTime;
                 sleep(10 - $tickUseTime);
             } elseif (microtime(true) - $this->lastWarning >= 5000) {
                 print_r("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);

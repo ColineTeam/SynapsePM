@@ -2,7 +2,8 @@
 namespace synapsepm\network;
 
 use pocketmine\Server;
-use synapsepm\network\protocol\spp\{HeartbeatPacket, ConnectPacket, DisconnectPacket, SynapseInfo};
+use pocketmine\snooze\SleeperNotifier;
+use synapsepm\network\protocol\spp\{HeartbeatPacket, ConnectPacket, DisconnectPacket, SynapseInfo, SynapseDataPacket};
 use synapsepm\network\synlib\SynapseClient;
 use synapsepm\SynapseAPI;
 use synapsepm\SynapseEntry;
@@ -21,7 +22,12 @@ class SynapseInterface {
     public function __construct(SynapseEntry $server, string $ip, int $port) {
         $this->synapse = $server;
         $this->registerPackets();
-        $this->client = new SynapseClient(Server::getInstance()->getLogger(), $port, $ip);
+
+        $this->getSynapse()->getSynapse()->getServer()->getTickSleeper()->addNotifier($notifier = new \pocketmine\snooze\SleeperNotifier(), function (): void {
+            $this->client->connect();
+        });
+        $this->client = new SynapseClient(Server::getInstance()->getLogger(), $port, $ip, $notifier);
+        $this->client->start();
     }
     public function getPacket($pid, $buffer){
         $class = $this->packetPool[$pid];
@@ -51,7 +57,7 @@ class SynapseInterface {
         $this->client->pushMainToThreadPacket($pk);
     }
     public function isConnected(){
-        return $this->connected;
+        return $this->client->isConnected();
     }
     public function process(){
         $pk = $this->client->readMainToThreadPacket();
@@ -61,7 +67,8 @@ class SynapseInterface {
         }
 
         $this->connected = $this->client->isConnected();
-        if($this->connected && $this->client->isNeedAuth()){
+        if(!$this->connected && $this->client->isNeedAuth()){
+            echo 'conect';
             $this->synapse->connect();
             $this->client->setNeedAuth(false);
         }

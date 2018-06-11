@@ -1,10 +1,10 @@
 <?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/network/synlib/SynapseClient.java
 namespace synapsepm\network\synlib;
 
-
 use pocketmine\Server;
 use pocketmine\Thread;
-use synapseapi\network\protocol\spp\SynapseDataPacket;
+use synapsepm\network\protocol\spp\SynapseDataPacket;
+use pocketmine\snooze\SleeperNotifier;
 
 class SynapseClient extends Thread {
     const VERSION = "0.3.0";
@@ -17,7 +17,7 @@ class SynapseClient extends Thread {
     private $clientGroup;
     private $session;
 
-    public function __construct($logger, int $port, string $interfaz) {
+    public function __construct($logger, int $port, string $interfaz,  SleeperNotifier $notifier) {
         $this->logger = $logger;
         $this->interfaz = $interfaz;
         $this->port = $port;
@@ -25,6 +25,7 @@ class SynapseClient extends Thread {
             throw new \Exception('Invalid port range'); //TODO: change to IllegalArgumentException
         }
         $this->shutdown = false;
+        $this->notifier = $notifier;
 
     }
 
@@ -32,7 +33,7 @@ class SynapseClient extends Thread {
         $this->needReconnect = true;
     }
     public function isNeedAuth(): bool{
-        return $this->isNeedAuth();
+        return $this->needAuth;
     }
     public function setNeedAuth(bool $needAuth) {
         $this->needAuth = $needAuth;
@@ -43,6 +44,7 @@ class SynapseClient extends Thread {
     }
 
     public function setConnected(bool $connected) {
+        var_dump($connected);
         $this->connected = $connected;
     }
 
@@ -79,12 +81,15 @@ class SynapseClient extends Thread {
     }
 
     public function pushMainToThreadPacket(SynapseDataPacket $data) {
+       var_dump($data);
         $this->internalQueue[] = $data; //не понятно this.internalQueue.offer(data); добовляет в начало или конец списка
     }
  
     public function readMainToThreadPacket() {
-//        var_dump($this->internalQueue);
-        return @array_shift($this->internalQueue);
+        if (is_array($this->internalQueue)){
+//            var_dump($this->internalQueue);
+            return @array_shift($this->internalQueue);
+        }
     }
 
     public function getInternalQueueSize() {
@@ -109,6 +114,7 @@ class SynapseClient extends Thread {
         try {
            // $this->session = new Session($this);
             $this->connect();
+            //$this->notifier->wakeupSleeper();
             //$this->session->run();
         } catch (\Exception $e) {
             Server::getInstance()->getLogger()->logException($e);
