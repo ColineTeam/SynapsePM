@@ -58,6 +58,7 @@ class ServerConnection {
             }
         }
         while (($packet = $this->server->readMainToThreadPacket()) !== null) {
+            echo 'tick'.PHP_EOL;
             $this->writePacket($packet);
         }
     }

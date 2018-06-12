@@ -26,7 +26,6 @@ class SynapseClient extends Thread {
         }
         $this->shutdown = false;
         $this->notifier = $notifier;
-
     }
 
     public function reconnect() {
@@ -89,14 +88,16 @@ class SynapseClient extends Thread {
     }
 
     public function readMainToThreadPacket() {
-        $result = $this->internalQueue[count($this->internalQueue) -1];
-        unset($this->internalQueue[count($this->internalQueue) -1]);
-        return $result;
+        if (count($this->internalQueue) == 0) return null;
+        $arr = array_values(get_object_vars($this->internalQueue));
+        $elem = count($arr) -1;
+        unset($this->internalQueue[$elem]);
+        for ($i = 0; $i <= $elem+1; $i++) {
+            $this->internalQueue[$i] = $this->internalQueue[$i+1];
+        }
+        return $arr[$elem];
+        //return array_shift($this->internalQueue);
 
-    }
-
-    public function getInternalQueueSize() {
-        return count($this->internalQueue);
     }
 
     public function pushThreadToMainPacket($data) {
@@ -104,9 +105,14 @@ class SynapseClient extends Thread {
     }
 
     public function readThreadToMainPacket() {
-        $result = $this->externalQueue[count($this->externalQueue) -1];
-        unset($this->externalQueue[count($this->externalQueue) -1]);
-        return $result;
+        if (count($this->externalQueue) == 0) return null;
+        $arr = array_values(get_object_vars($this->externalQueue));
+        $elem = count($arr) -1;
+        unset($this->externalQueue[$elem]);
+        for ($i = 0; $i <= $elem+1; $i++) {
+            $this->externalQueue[$i] = $this->externalQueue[$i+1];
+        }
+        return $arr[$elem];
     }
 
     public function getSession() {

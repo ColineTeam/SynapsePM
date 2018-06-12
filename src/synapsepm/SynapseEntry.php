@@ -218,7 +218,7 @@ class SynapseEntry {
                     case InformationPacket::TYPE_LOGIN:
                         if ($pk->message === InformationPacket::INFO_LOGIN_SUCCESS) {
                             $this->getSynapse()->getLogger()->info('Login success to ' . $this->serverIp . ':' . $this->port);
-                            $this->verified = true;
+//                            $this->verified = true;
                         } elseif ($pk->message === InformationPacket::INFO_LOGIN_FAILED) {
                             $this->getSynapse()->getLogger()->info('Login failed to ' . $this->serverIp . ':' . $this->port);
                         }
