@@ -90,7 +90,7 @@ class SynapseEntry {
             $this->sendDataPacket($pk);
             $this->getSynapse()->getLogger()->debug("Synapse client has disconnected from Synapse synapse");
             try {
-                time_sleep_until(time() + 100);
+//                time_sleep_until(time() + 10);
             } catch (Exception $e) {
                 //ignore
             }
@@ -169,7 +169,6 @@ class SynapseEntry {
 
     public function threadTick() {
         $this->synapseInterface->process();
-//        var_dump($this->synapseInterface->isConnected() );
         if (!$this->synapseInterface->isConnected() || $this->verified) return;
         $time = microtime(true);
         if ($time - $this->lastUpdate >= 5) {//Heartbeat!
@@ -237,27 +236,6 @@ class SynapseEntry {
     }
 }
 
-//class SleepyThread extends \pocketmine\Thread{
-//    private $notifier;
-//
-//    public function __construct(\pocketmine\snooze\SleeperNotifier $notifier){
-//        $this->notifier = $notifier;
-//    }
-//
-//    public function run() : void{
-//        while(true){
-//            //do some work
-//            sleep(5);
-//
-//            //send a notification to the main thread
-//            //the parent thread doesn't have to be sleeping to receive this, it'll process it next time it tries to go
-//            //back to sleep
-//            //if the parent thread is sleeping, it'll be woken up to process notifications immediately.
-//            $this->notifier->wakeupSleeper();
-//        }
-//    }
-//}
-
 class AsyncTicker extends \pocketmine\Thread {
     public $notifier, $lastWarning = 0;
 
@@ -266,14 +244,12 @@ class AsyncTicker extends \pocketmine\Thread {
     }
 
     public function run() {
-
         while (true) {
             $startTime = microtime(true);
             $this->notifier->wakeupSleeper();
             $tickUseTime = microtime(true) - $startTime;
             if ($this->tickUseTime < 10) {
-//                echo 10 - $tickUseTime;
-                sleep(2 - $tickUseTime);
+                sleep(1 - $tickUseTime);
             } elseif (microtime(true) - $this->lastWarning >= 5000) {
                 print_r("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
                 $this->lastWarning = microtime(true);

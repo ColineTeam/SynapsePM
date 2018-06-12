@@ -53,9 +53,7 @@ class ServerConnection {
     private function tick() {
         $this->update();
         if (($packets = $this->readPackets()) !== null) {
-//            var_dump($packets);
             foreach ($packets as $packet) {
-//                var_dump($packet);
                 $this->server->pushThreadToMainPacket($packet);
             }
         }

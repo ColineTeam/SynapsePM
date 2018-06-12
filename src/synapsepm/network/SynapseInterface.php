@@ -74,10 +74,8 @@ class SynapseInterface {
     public function handlePacket($buffer){
         if (($pk = $this->getPacket($buffer)) !== null) {
             $pk->decode();
-//            var_dump($pk);
             $this->synapse->handleDataPacket($pk);
         }
-        var_dump($pk);
     }
     public function registerPackets(){
         $this->packetPool = new \SplFixedArray(256);

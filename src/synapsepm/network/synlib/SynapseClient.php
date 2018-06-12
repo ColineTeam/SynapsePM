@@ -89,7 +89,6 @@ class SynapseClient extends Thread {
     }
 
     public function readMainToThreadPacket() {
-//        if($this->internalQueue[0]) var_dump($this->internalQueue);
         $result = $this->internalQueue[count($this->internalQueue) -1];
         unset($this->internalQueue[count($this->internalQueue) -1]);
         return $result;
@@ -101,13 +100,11 @@ class SynapseClient extends Thread {
     }
 
     public function pushThreadToMainPacket($data) {
-//        var_dump($data);
         $this->externalQueue[] = $data;
     }
 
     public function readThreadToMainPacket() {
         $result = $this->externalQueue[count($this->externalQueue) -1];
-        var_dump($result);
         unset($this->externalQueue[count($this->externalQueue) -1]);
         return $result;
     }
@@ -120,11 +117,8 @@ class SynapseClient extends Thread {
         $this->registerClassLoader();
         register_shutdown_function([$this, 'shutdownHandler']);
         try {
-            print_r('Thread run');
-            // $this->session = new Session($this);
             $this->connect();
             $this->notifier->wakeupSleeper();
-            //$this->session->run();
         } catch (\Exception $e) {
             Server::getInstance()->getLogger()->logException($e);
         }
