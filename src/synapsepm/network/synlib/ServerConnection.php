@@ -53,8 +53,9 @@ class ServerConnection {
     private function tick() {
         $this->update();
         if (($packets = $this->readPackets()) !== null) {
+//            var_dump($packets);
             foreach ($packets as $packet) {
-                var_dump($packet);
+//                var_dump($packet);
                 $this->server->pushThreadToMainPacket($packet);
             }
         }
@@ -84,6 +85,7 @@ class ServerConnection {
             $err = socket_last_error($this->socket->getSocket());
             socket_clear_error($this->socket->getSocket());
             if ($err === 10057 or $err === 10054) {
+
                 $this->server->getLogger()->error('Synapse connection has disconnected unexpectedly');
                 $this->connected = false;
                 $this->server->setConnected(false);
@@ -94,7 +96,6 @@ class ServerConnection {
                 }
             }
         } else {
-
             if ((($time = microtime(true)) - $this->lastCheck) >= 3) {
                 $this->server->getLogger()->notice('Trying to re-connect to Synapse Server');
                 if ($this->socket->connect()) {
@@ -154,7 +155,7 @@ class ServerConnection {
     }
 
     public function writePacket($data) {
-        var_dump($data);
+//        var_dump($data);
         @socket_write($this->socket->getSocket(), Binary::writeShort(SynapseInfo::PROTOCOL_MAGIC));
         @socket_write($this->socket->getSocket(), $data{0});
         @socket_write($this->socket->getSocket(), Binary::writeInt(strlen($data) - 1));

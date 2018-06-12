@@ -101,11 +101,15 @@ class SynapseClient extends Thread {
     }
 
     public function pushThreadToMainPacket($data) {
+//        var_dump($data);
         $this->externalQueue[] = $data;
     }
 
     public function readThreadToMainPacket() {
-        return @array_shift($this->externalQueue);
+        $result = $this->externalQueue[count($this->externalQueue) -1];
+        var_dump($result);
+        unset($this->externalQueue[count($this->externalQueue) -1]);
+        return $result;
     }
 
     public function getSession() {
@@ -116,9 +120,10 @@ class SynapseClient extends Thread {
         $this->registerClassLoader();
         register_shutdown_function([$this, 'shutdownHandler']);
         try {
+            print_r('Thread run');
             // $this->session = new Session($this);
             $this->connect();
-            //$this->notifier->wakeupSleeper();
+            $this->notifier->wakeupSleeper();
             //$this->session->run();
         } catch (\Exception $e) {
             Server::getInstance()->getLogger()->logException($e);
@@ -131,7 +136,7 @@ class SynapseClient extends Thread {
     }
 
     public function getClientGroup() {
-        return $this->getClientGroup();
+        return $this->clientGroup;
     }
 
     public function shutdownHandler() {

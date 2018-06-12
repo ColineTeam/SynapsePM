@@ -3,7 +3,7 @@ namespace synapsepm\network;
 
 use pocketmine\Server;
 use pocketmine\snooze\SleeperNotifier;
-use synapsepm\network\protocol\spp\{HeartbeatPacket, ConnectPacket, DisconnectPacket, SynapseInfo, SynapseDataPacket};
+use synapsepm\network\protocol\spp\{HeartbeatPacket, ConnectPacket, DisconnectPacket, SynapseInfo, SynapseDataPacket, InformationPacket};
 use synapsepm\network\synlib\SynapseClient;
 use synapsepm\SynapseAPI;
 use synapsepm\SynapseEntry;
@@ -29,7 +29,9 @@ class SynapseInterface {
         $this->client = new SynapseClient(Server::getInstance()->getLogger(), $port, $ip, $notifier);
         $this->client->start();
     }
-    public function getPacket($pid, $buffer){
+    public function getPacket($buffer) {
+        $pid = ord($buffer{0});
+        /** @var DataPacket $class */
         $class = $this->packetPool[$pid];
         if ($class !== null) {
             $pk = clone $class;
@@ -57,11 +59,11 @@ class SynapseInterface {
         return $this->client->isConnected();
     }
     public function process(){
-//        $pk = $this->client->readMainToThreadPacket();
-//        while ($pk !== null){
-//            $this->handlePacket($pk);
-//            $pk = $this->client->readMainToThreadPacket();
-//        }
+        $pk = $this->client->readThreadToMainPacket();
+        while ($pk !== null){
+            $this->handlePacket($pk);
+            $pk = $this->client->readThreadToMainPacket();
+        }
 
         $this->connected = $this->client->isConnected();
         if($this->connected && $this->client->isNeedAuth()){
@@ -69,11 +71,13 @@ class SynapseInterface {
             $this->client->setNeedAuth(false);
         }
     }
-    public function handlePacket(SynapseDataPacket $pk){
-        if($pk !== null){
+    public function handlePacket($buffer){
+        if (($pk = $this->getPacket($buffer)) !== null) {
             $pk->decode();
+//            var_dump($pk);
             $this->synapse->handleDataPacket($pk);
         }
+        var_dump($pk);
     }
     public function registerPackets(){
         $this->packetPool = new \SplFixedArray(256);
@@ -84,7 +88,7 @@ class SynapseInterface {
 //        $this->registerPacket(SynapseInfo::REDIRECT_PACKET, RedirectPacket::class);
 //        $this->registerPacket(SynapseInfo::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
 //        $this->registerPacket(SynapseInfo::PLAYER_LOGOUT_PACKET, PlayerLogoutPacket::class);
-//        $this->registerPacket(SynapseInfo::INFORMATION_PACKET, InformationPacket::class);
+        $this->registerPacket(SynapseInfo::INFORMATION_PACKET, InformationPacket::class);
 //        $this->registerPacket(SynapseInfo::TRANSFER_PACKET, TransferPacket::class);
 //        $this->registerPacket(SynapseInfo::BROADCAST_PACKET, BroadcastPacket::class);
 //        $this->registerPacket(SynapseInfo::FAST_PLAYER_LIST_PACKET, FastPlayerListPacket::class);

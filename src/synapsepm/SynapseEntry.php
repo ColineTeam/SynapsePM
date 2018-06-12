@@ -5,12 +5,7 @@ use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use pocketmine\utils\UUID;
-use synapsepm\network\protocol\spp\SynapseDataPacket;
-use synapsepm\network\protocol\spp\BroadcastPacket;
-use synapsepm\network\protocol\spp\ConnectPacket;
-use synapsepm\network\protocol\spp\DisconnectPacket;
-use synapsepm\network\protocol\spp\HeartbeatPacket;
-use synapsepm\network\protocol\spp\SynapseInfo;
+use synapsepm\network\protocol\spp\{InformationPacket, SynapseDataPacket, BroadcastPacket, ConnectPacket, DisconnectPacket, HeartbeatPacket, SynapseInfo};
 use synapsepm\network\SynapseInterface;
 use synapsepm\network\SynLibInterface;
 use synapsepm\SynapseAPI;
@@ -100,7 +95,7 @@ class SynapseEntry {
                 //ignore
             }
         }
-        if ($this->synapseInterface != null) $this->synapseInterface->shutdown();
+//        if ($this->synapseInterface != null) $this->synapseInterface->shutdown();
     }
 
     public function getServerDescription() {
@@ -183,7 +178,7 @@ class SynapseEntry {
             $pk = new HeartbeatPacket();
             $pk->tps = $this->getSynapse()->getServer()->getTicksPerSecondAverage();
             $pk->load = $this->getSynapse()->getServer()->getTickUsageAverage();
-            $pk->upTime = (microtime(true) - \pocketmine\START_TIME) / 1000;
+            $pk->upTime = (microtime(true) - \pocketmine\START_TIME);
             $this->sendDataPacket($pk);
         }
         $finalTime = microtime(true);
@@ -203,8 +198,9 @@ class SynapseEntry {
     }
 
     public function handleDataPacket(SynapseDataPacket $pk) {
+        $this->getSynapse()->getLogger()->info('handleDataPacket '.var_dump($pk));
         switch ($pk->pid()) {
-            case Info::DISCONNECT_PACKET:
+            case SynapseInfo::DISCONNECT_PACKET:
                 /** @var DisconnectPacket $pk */
                 $this->verified = false;
                 switch ($pk->type) {
@@ -217,15 +213,15 @@ class SynapseEntry {
                         break;
                 }
                 break;
-            case Info::INFORMATION_PACKET:
+            case SynapseInfo::INFORMATION_PACKET:
                 /** @var InformationPacket $pk */
                 switch ($pk->type) {
                     case InformationPacket::TYPE_LOGIN:
                         if ($pk->message === InformationPacket::INFO_LOGIN_SUCCESS) {
-                            $this->logger->info('Login success to ' . $this->serverIp . ':' . $this->port);
+                            $this->getSynapse()->getLogger()->info('Login success to ' . $this->serverIp . ':' . $this->port);
                             $this->verified = true;
                         } elseif ($pk->message === InformationPacket::INFO_LOGIN_FAILED) {
-                            $this->logger->info('Login failed to ' . $this->serverIp . ':' . $this->port);
+                            $this->getSynapse()->getLogger()->info('Login failed to ' . $this->serverIp . ':' . $this->port);
                         }
                         break;
                     case InformationPacket::TYPE_CLIENT_DATA:
@@ -273,20 +269,16 @@ class AsyncTicker extends \pocketmine\Thread {
 
         while (true) {
             $startTime = microtime(true);
-//            $this->entry->threadTick();
             $this->notifier->wakeupSleeper();
             $tickUseTime = microtime(true) - $startTime;
             if ($this->tickUseTime < 10) {
 //                echo 10 - $tickUseTime;
-                sleep(10 - $tickUseTime);
+                sleep(2 - $tickUseTime);
             } elseif (microtime(true) - $this->lastWarning >= 5000) {
                 print_r("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
                 $this->lastWarning = microtime(true);
             }
-//            $startTime = microtime(true);
-
         }
-
     }
 }
 
