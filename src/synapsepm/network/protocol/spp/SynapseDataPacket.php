@@ -2,9 +2,9 @@
 
 namespace synapsepm\network\protocol\spp;
 
-use pocketmine\utils\BinaryStream;
+use pocketmine\network\mcpe\NetworkBinaryStream;
 
-abstract class SynapseDataPacket extends BinaryStream {
+abstract class SynapseDataPacket extends NetworkBinaryStream {
 
     public $isEncoded = false;
 
@@ -15,15 +15,8 @@ abstract class SynapseDataPacket extends BinaryStream {
     abstract public function encode();
 
     public function reset() {
-        parent::reset();
-    }
-
-    public function clean() {
-        $this->setBuffer(null);
-
-        $this->isEncoded = false;
+        $this->buffer = chr($this::NETWORK_ID);
         $this->offset = 0;
-        return $this;
     }
 
     public function clone() {

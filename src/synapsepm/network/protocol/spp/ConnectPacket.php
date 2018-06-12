@@ -18,7 +18,7 @@ class ConnectPacket extends SynapseDataPacket {
         $this->reset();
         $this->putInt($this->protocol);
         $this->putInt($this->maxPlayers);
-        $this->putByte(($this->isMainServer) ? 1 : 0);
+        $this->putBool($this->isMainServer);
         $this->putString($this->description);
         $this->putString($this->password);
     }

@@ -19,8 +19,8 @@ class SynLibInterface implements SourceInterface {
     }
     public function setName(string $name) {
     }
-    public function process(): bool {
-        return false;
+    public function process(): void {
+//        return null;
     }
     public function close(Player $player, string $reason = "unknown reason") {
     }

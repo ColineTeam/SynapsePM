@@ -177,9 +177,9 @@ class SynapseEntry {
 //        var_dump($this->synapseInterface->isConnected() );
         if (!$this->synapseInterface->isConnected() || $this->verified) return;
         $time = microtime(true);
-        var_dump($time - $this->lastUpdate);
         if ($time - $this->lastUpdate >= 5) {//Heartbeat!
             $this->lastUpdate = $time;
+            $this->getSynapse()->getServer()->getLogger()->warning("HeartbeatPacket! ");
             $pk = new HeartbeatPacket();
             $pk->tps = $this->getSynapse()->getServer()->getTicksPerSecondAverage();
             $pk->load = $this->getSynapse()->getServer()->getTickUsageAverage();
@@ -188,7 +188,6 @@ class SynapseEntry {
         }
         $finalTime = microtime(true);
         $usedTime = $finalTime - $time;
-        $this->getSynapse()->getServer()->getLogger()->warning("time ConnectPacket " . $usedTime);
         if ((($finalTime) - $this->lastUpdate) >= 30 && $this->synapseInterface->isConnected()) { //30 seconds timeout
             $this->synapseInterface->reconnect();
         }

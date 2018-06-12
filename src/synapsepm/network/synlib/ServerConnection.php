@@ -30,7 +30,6 @@ class ServerConnection {
         $this->lastCheck = microtime(true);
         $this->connected = true;
         $this->server->setConnected(true);
-
         $this->run();
     }
 
@@ -103,7 +102,6 @@ class ServerConnection {
                     @socket_getpeername($this->socket->getSocket(), $address, $port);
                     $this->ip = $address;
                     $this->port = $port;
-                    var_dump('looooooooool');
                     $this->server->setConnected(true);
                     $this->server->setNeedAuth(true);
                 }
@@ -155,9 +153,8 @@ class ServerConnection {
         return $packets;
     }
 
-    public function writePacket(SynapseDataPacket $pk) {
-        $pk->encode();
-        $data = $pk->buffer;
+    public function writePacket($data) {
+        var_dump($data);
         @socket_write($this->socket->getSocket(), Binary::writeShort(SynapseInfo::PROTOCOL_MAGIC));
         @socket_write($this->socket->getSocket(), $data{0});
         @socket_write($this->socket->getSocket(), Binary::writeInt(strlen($data) - 1));

@@ -51,9 +51,6 @@ class SynapseInterface {
         return $this->putPacketThread;
     }
     public function putPacket(SynapseDataPacket $pk){
-        if($pk->isEncoded){
-            $pk->encode();
-        }
         $this->client->pushMainToThreadPacket($pk);
     }
     public function isConnected(){
