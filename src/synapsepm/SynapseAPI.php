@@ -1,6 +1,7 @@
 <?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/SynapseAPI.java
 namespace synapsepm;
 
+use pocketmine\network\mcpe\protocol\PacketPool;
 use pocketmine\plugin\PluginBase;
 use synapsepm\messaging\StandardMessenger;
 

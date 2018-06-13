@@ -7,9 +7,8 @@ use pocketmine\network\SourceInterface;
 use synapsepm\SynapsePlayer;
 use synapsepm\event\SynapseEvent;
 
-/**
- */
-public class SynapsePlayerCreationEvent extends SynapseEvent {
+
+class SynapsePlayerCreationEvent extends SynapseEvent {
 
     public static $handlerList = null;
     private $interfaz;

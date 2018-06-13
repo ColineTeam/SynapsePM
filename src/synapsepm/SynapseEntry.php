@@ -1,15 +1,18 @@
 <?php //https://github.com/iTXTech/SynapseAPI/blob/master/src/main/java/org/itxtech/synapseapi/SynapseEntry.java
 namespace synapsepm;
 
+use pocketmine\event\player\PlayerCreationEvent;
 use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use pocketmine\utils\UUID;
+use synapsepm\event\player\SynapsePlayerCreationEvent;
 use synapsepm\network\protocol\spp\{InformationPacket, SynapseDataPacket, BroadcastPacket, ConnectPacket, DisconnectPacket, HeartbeatPacket, SynapseInfo};
 use synapsepm\network\SynapseInterface;
 use synapsepm\network\SynLibInterface;
 use synapsepm\SynapseAPI;
 use \pocketmine\snooze\SleeperNotifier;
+use synapsepm\SynapsePlayer;
 
 
 class SynapseEntry {
@@ -153,7 +156,9 @@ class SynapseEntry {
     public function getHash() {
         return $this->serverIp . ":" . $this->port;
     }
-
+    private function getLogger(){
+        return $this->getSynapse()->getLogger();
+    }
     public function connect() {
         $this->getSynapse()->getLogger()->notice("Connecting " . $this->getHash());
         $this->verified = false;
@@ -193,11 +198,9 @@ class SynapseEntry {
         if (isset($this->players[$uuid = $player->getUniqueId()->toBinary()])) {
             unset($this->players[$uuid]);
         }
-        //TODO: разобрать зачем эта функция и где она используеться
     }
 
     public function handleDataPacket(SynapseDataPacket $pk) {
-        $this->getSynapse()->getLogger()->info('handleDataPacket '.var_dump($pk));
         switch ($pk->pid()) {
             case SynapseInfo::DISCONNECT_PACKET:
                 /** @var DisconnectPacket $pk */
@@ -227,10 +230,45 @@ class SynapseEntry {
                         $this->clientData = json_decode($pk->message, true)['clientList'];
                         $this->lastRecvInfo = microtime();
                         break;
+
 //                    case InformationPacket::TYPE_PLUGIN_MESSAGE:
 //                        $this->server->getPluginManager()->callEvent(new SynapsePluginMessageReceiveEvent($this, $pk->message));
 //                        break;
                 }
+                break;
+            case SynapseInfo::PLAYER_LOGIN_PACKET:
+                $this->getSynapse()->getLogger()->info('PlayerLoginPacket');
+                var_dump($pk);
+                /** @var PlayerLoginPacket $pk */
+                $ev = new SynapsePlayerCreationEvent($this->synLibInterface, SynapsePlayer::class, SynapsePlayer::class, mt_rand(1000, 100000000), $pk->address, $pk->port);
+//                $ev = new PlayerCreationEvent($this->synLibInterface, SynapsePlayer::class, SynapsePlayer::class, $pk->address, $pk->port);
+                $this->getSynapse()->getServer()->getPluginManager()->callEvent($ev);
+                $class = $ev->getPlayerClass();
+                /** @var SynapsePlayer $player */
+                $player = new $class($this->synLibInterface, $ev->getAddress(), $ev->getPort());
+//                $player->setUniqueId($pk->uuid);
+                $this->getSynapse()->getServer()->addPlayer($player, $player);
+                $this->players[$pk->uuid->toBinary()] = $player;
+                $player->handleLoginPacket($pk);
+                break;
+            case SynapseInfo::REDIRECT_PACKET:
+                /** @var RedirectPacket $pk */
+                if (isset($this->players[$uuid = $pk->uuid->toBinary()])) {
+                    $innerPacket = $this->getPacket($pk->mcpeBuffer);
+                    if ($innerPacket !== null) {
+                        $this->players[$uuid]->handleDataPacket($innerPacket);
+                    }
+                }
+                break;
+            case SynapseInfo::PLAYER_LOGOUT_PACKET:
+                /** @var PlayerLogoutPacket $pk */
+                if (isset($this->players[$uuid = $pk->uuid->toBinary()])) {
+                    $this->players[$uuid]->close('', $pk->reason, false);
+                    $this->removePlayer($this->players[$uuid]);
+                }
+                break;
+            default:
+                $this->getSynapse()->getLogger()->info('not found pk '.var_dump($pk));
                 break;
         }
     }

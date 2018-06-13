@@ -96,7 +96,6 @@ class SynapseClient extends Thread {
             $this->internalQueue[$i] = $this->internalQueue[$i+1];
         }
         return $arr[$elem];
-        //return array_shift($this->internalQueue);
 
     }
 

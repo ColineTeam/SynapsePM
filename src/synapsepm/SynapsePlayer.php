@@ -3,6 +3,7 @@ namespace synapsepm;
 
 
 use pocketmine\network\SourceInterface;
+use synapsepm\event\player\SynapsePlayerConnectEvent;
 use synapsepm\network\protocol\spp\PlayerLoginPacket;
 use synapsepm\network\protocol\spp\SynapseInfo;
 
@@ -17,15 +18,27 @@ class SynapsePlayer extends \pocketmine\Player {
         parent::__construct($interfaz, $ip, $port);
         $this->isSynapseLogin = $this->synapseEntry != null;
     }
-    private static function getClientFriendlyGamemode(int $gamemode): int{
-        if($gamemode == \pocketmine\Player::SPECTATOR){
-            return \pocketmine\Player::CREATIVE;
-        }
-        return $gamemode;
+    public static function getClientFriendlyGamemode(int $gamemode) : int{
+    $gamemode &= 0x03;
+    if($gamemode === Player::SPECTATOR){
+        return Player::CREATIVE;
     }
+
+    return $gamemode;
+}
     public function handleLoginPacket(PlayerLoginPacket $packet){
-        if($this->isSynapseLogin){
-//            parent::handleDataPacket(SynapseAPI::getInstance()->)
+        if(!$this->isSynapseLogin){
+            parent::handleDataPacket(SynapseAPI::getInstance()->getPacket($packet->cachedLoginPacket));
+        }
+        $this->isFirstTimeLogin = $packet->isFirstTime;
+        $this->server->getPluginManager()->callEvent($ev = new SynapsePlayerConnectEvent($this, $this->isFirstTimeLogin));
+        if(!$ev->isCancelled()){
+            $pk = SynapseAPI::getInstance()->getPacket($packet->cachedLoginPacket);
+                var_dump($pk);
+            /** @var PlayerLoginPacket $pk */
+//            $pk->offset = 3;
+            $pk->decode();
+            $this->handleLogin($pk);
         }
     }
 

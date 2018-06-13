@@ -3,8 +3,9 @@ namespace synapsepm\network;
 
 use pocketmine\Server;
 use pocketmine\snooze\SleeperNotifier;
-use synapsepm\network\protocol\spp\{HeartbeatPacket, ConnectPacket, DisconnectPacket, SynapseInfo, SynapseDataPacket, InformationPacket};
+use synapsepm\network\protocol\spp\{HeartbeatPacket, ConnectPacket, DisconnectPacket, SynapseInfo, SynapseDataPacket, InformationPacket, RedirectPacket, PlayerLoginPacket, PlayerLogoutPacket};
 use synapsepm\network\synlib\SynapseClient;
+use synapsepm\runnable\SynapseEntryPutPacketThread;
 use synapsepm\SynapseAPI;
 use synapsepm\SynapseEntry;
 
@@ -26,6 +27,7 @@ class SynapseInterface {
         $this->getSynapse()->getSynapse()->getServer()->getTickSleeper()->addNotifier($notifier = new \pocketmine\snooze\SleeperNotifier(), function (): void {
             $this->client->connect();
         });
+        $this->putPacketThread = new SynapseEntryPutPacketThread($this);
         $this->client = new SynapseClient(Server::getInstance()->getLogger(), $port, $ip, $notifier);
         $this->client->start();
     }
@@ -83,9 +85,9 @@ class SynapseInterface {
         $this->registerPacket(SynapseInfo::HEARTBEAT_PACKET, HeartbeatPacket::class);
         $this->registerPacket(SynapseInfo::CONNECT_PACKET, ConnectPacket::class);
         $this->registerPacket(SynapseInfo::DISCONNECT_PACKET, DisconnectPacket::class);
-//        $this->registerPacket(SynapseInfo::REDIRECT_PACKET, RedirectPacket::class);
-//        $this->registerPacket(SynapseInfo::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
-//        $this->registerPacket(SynapseInfo::PLAYER_LOGOUT_PACKET, PlayerLogoutPacket::class);
+        $this->registerPacket(SynapseInfo::REDIRECT_PACKET, RedirectPacket::class);
+        $this->registerPacket(SynapseInfo::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
+        $this->registerPacket(SynapseInfo::PLAYER_LOGOUT_PACKET, PlayerLogoutPacket::class);
         $this->registerPacket(SynapseInfo::INFORMATION_PACKET, InformationPacket::class);
 //        $this->registerPacket(SynapseInfo::TRANSFER_PACKET, TransferPacket::class);
 //        $this->registerPacket(SynapseInfo::BROADCAST_PACKET, BroadcastPacket::class);
