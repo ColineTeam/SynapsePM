@@ -33,6 +33,6 @@ class PlayerLoginPacket extends SynapseDataPacket {
         $this->address = $this->getString();
         $this->port = $this->getInt();
         $this->isFirstTime = $this->getBool() == 1;
-        $this->cachedLoginPacket = $this->get($this->getShort());
+        $this->cachedLoginPacket = $this->get($this->getInt());
     }
 }

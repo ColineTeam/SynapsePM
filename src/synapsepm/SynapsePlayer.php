@@ -34,11 +34,13 @@ class SynapsePlayer extends \pocketmine\Player {
         $this->server->getPluginManager()->callEvent($ev = new SynapsePlayerConnectEvent($this, $this->isFirstTimeLogin));
         if(!$ev->isCancelled()){
             $pk = SynapseAPI::getInstance()->getPacket($packet->cachedLoginPacket);
-                var_dump($pk);
+
             /** @var PlayerLoginPacket $pk */
 //            $pk->offset = 3;
             $pk->decode();
-            $this->handleLogin($pk);
+//            var_dump($pk);
+//            $this->handleLogin($pk);
+            $this->sendDataPacket($pk);
         }
     }
 

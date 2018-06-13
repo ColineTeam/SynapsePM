@@ -7,6 +7,8 @@ class ConnectPacket extends SynapseDataPacket {
     public $protocol = SynapseInfo::CURRENT_PROTOCOL;
     public $maxPlayers;
     public $isMainServer;
+    public $isLobbyServer = true;
+    public $transferShutdown = false;
     public $description;
     public $password;
 
@@ -19,6 +21,8 @@ class ConnectPacket extends SynapseDataPacket {
         $this->putInt($this->protocol);
         $this->putInt($this->maxPlayers);
         $this->putBool($this->isMainServer);
+        $this->putBool($this->isLobbyServer);
+        $this->putBool($this->transferShutdown);
         $this->putString($this->description);
         $this->putString($this->password);
     }
@@ -26,7 +30,9 @@ class ConnectPacket extends SynapseDataPacket {
     public function decode() {
         $this->protocol = $this->getInt();
         $this->maxPlayers = $this->getInt();
-        $this->isMainServer = $this->getByte() == 1;
+        $this->isMainServer = $this->getBool();
+        $this->isLobbyServer = $this->getBool();
+        $this->transferShutdown = $this->getBool();
         $this->description = $this->getString();
         $this->password = $this->getString();
     }

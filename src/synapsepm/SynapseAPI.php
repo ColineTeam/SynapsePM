@@ -11,7 +11,7 @@ class SynapseAPI extends PluginBase {
     private $autoConnect = true;
     private $loadingScreen = false;
     private $synapseEntries = [];
-    private $autoCompress = true; //Compress in Nukkit, not Nemisys
+    private $autoCompress = false; //Compress in Nukkit, not Nemisys
     private $messenger = [];
 
     public static function getInstance() : SynapseAPI{

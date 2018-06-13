@@ -59,8 +59,8 @@ class SynapseEntry {
            $this->threadTick();
         });
 
-        $thread = new AsyncTicker($notifier);
-        $thread->start();
+        $this->thread = new AsyncTicker($notifier);
+        $this->thread->start();
 
         $this->getSynapse()->getScheduler()->scheduleRepeatingTask(new Ticker($this), 1);
     }
@@ -98,7 +98,9 @@ class SynapseEntry {
                 //ignore
             }
         }
-//        if ($this->synapseInterface != null) $this->synapseInterface->shutdown();
+        $this->getSynapse()->getLogger()->debug('shutdown '.$this->getHash());
+//        $this->thread->quit();
+        if ($this->synapseInterface != null) $this->synapseInterface->shutdown();
     }
 
     public function getServerDescription() {
@@ -174,7 +176,7 @@ class SynapseEntry {
 
     public function threadTick() {
         $this->synapseInterface->process();
-        if (!$this->synapseInterface->isConnected() || $this->verified) return;
+        if (!$this->synapseInterface->isConnected()) return;
         $time = microtime(true);
         if ($time - $this->lastUpdate >= 5) {//Heartbeat!
             $this->lastUpdate = $time;
@@ -208,7 +210,7 @@ class SynapseEntry {
                 switch ($pk->type) {
                     case DisconnectPacket::TYPE_GENERIC:
                         $this->getLogger()->notice('Synapse Client has disconnected due to ' . $pk->message);
-                        $this->interface->reconnect();
+                        $this->synapseInterface->reconnect();
                         break;
                     case DisconnectPacket::TYPE_WRONG_PROTOCOL:
                         $this->getLogger()->error($pk->message);
@@ -221,7 +223,7 @@ class SynapseEntry {
                     case InformationPacket::TYPE_LOGIN:
                         if ($pk->message === InformationPacket::INFO_LOGIN_SUCCESS) {
                             $this->getSynapse()->getLogger()->info('Login success to ' . $this->serverIp . ':' . $this->port);
-//                            $this->verified = true;
+                            $this->verified = true;
                         } elseif ($pk->message === InformationPacket::INFO_LOGIN_FAILED) {
                             $this->getSynapse()->getLogger()->info('Login failed to ' . $this->serverIp . ':' . $this->port);
                         }
@@ -238,29 +240,34 @@ class SynapseEntry {
                 break;
             case SynapseInfo::PLAYER_LOGIN_PACKET:
                 $this->getSynapse()->getLogger()->info('PlayerLoginPacket');
-                var_dump($pk);
+//                var_dump($pk);
                 /** @var PlayerLoginPacket $pk */
-                $ev = new SynapsePlayerCreationEvent($this->synLibInterface, SynapsePlayer::class, SynapsePlayer::class, mt_rand(1000, 100000000), $pk->address, $pk->port);
-//                $ev = new PlayerCreationEvent($this->synLibInterface, SynapsePlayer::class, SynapsePlayer::class, $pk->address, $pk->port);
+                $ev = new PlayerCreationEvent($this->synLibInterface, SynapsePlayer::class, SynapsePlayer::class, $pk->address, $pk->port);
                 $this->getSynapse()->getServer()->getPluginManager()->callEvent($ev);
+                $ev = new SynapsePlayerCreationEvent($this->synLibInterface, SynapsePlayer::class, SynapsePlayer::class, $pk->address, $pk->port);
+                $this->getSynapse()->getServer()->getPluginManager()->callEvent($ev);
+
                 $class = $ev->getPlayerClass();
                 /** @var SynapsePlayer $player */
                 $player = new $class($this->synLibInterface, $ev->getAddress(), $ev->getPort());
+
 //                $player->setUniqueId($pk->uuid);
-                $this->getSynapse()->getServer()->addPlayer($player, $player);
+                $this->getSynapse()->getServer()->addPlayer($player);
                 $this->players[$pk->uuid->toBinary()] = $player;
                 $player->handleLoginPacket($pk);
                 break;
             case SynapseInfo::REDIRECT_PACKET:
                 /** @var RedirectPacket $pk */
                 if (isset($this->players[$uuid = $pk->uuid->toBinary()])) {
-                    $innerPacket = $this->getPacket($pk->mcpeBuffer);
+                    $innerPacket = SynapseAPI::getInstance()->getPacket($pk->mcpeBuffer);
                     if ($innerPacket !== null) {
                         $this->players[$uuid]->handleDataPacket($innerPacket);
                     }
                 }
                 break;
             case SynapseInfo::PLAYER_LOGOUT_PACKET:
+                $this->getSynapse()->getLogger()->info('PLAYER_LOGOUT_PACKET');
+
                 /** @var PlayerLogoutPacket $pk */
                 if (isset($this->players[$uuid = $pk->uuid->toBinary()])) {
                     $this->players[$uuid]->close('', $pk->reason, false);
@@ -282,18 +289,20 @@ class AsyncTicker extends \pocketmine\Thread {
     }
 
     public function run() {
+        $this->registerClassLoader();
         while (true) {
             $startTime = microtime(true);
             $this->notifier->wakeupSleeper();
             $tickUseTime = microtime(true) - $startTime;
             if ($this->tickUseTime < 10) {
-                sleep(1 - $tickUseTime);
+                sleep(2 - $tickUseTime);
             } elseif (microtime(true) - $this->lastWarning >= 5000) {
                 print_r("SynapseEntry<???> Async Thread is overloading! TPS: {indev} tickUseTime: " . $this->tickUseTime);
                 $this->lastWarning = microtime(true);
             }
         }
     }
+
 }
 
 class Ticker extends Task {

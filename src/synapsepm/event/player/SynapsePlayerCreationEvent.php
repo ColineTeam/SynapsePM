@@ -18,9 +18,9 @@ class SynapsePlayerCreationEvent extends SynapseEvent {
     private $baseClass;
     private $playerClass;
     
-    public function __construct(SourceInterface $interfaz, $baseClass, $playerClass, $clientId, $address, $port) {
+    public function __construct(SourceInterface $interfaz, $baseClass, $playerClass, $address, $port) {
         $this->interfaz = $interfaz;
-        $this->clientId = $clientId;
+        $this->clientId = mt_rand();
         $this->address = $address;
         $this->port = $port;
 

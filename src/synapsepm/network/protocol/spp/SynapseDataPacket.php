@@ -1,5 +1,4 @@
 <?php
-
 namespace synapsepm\network\protocol\spp;
 
 use pocketmine\network\mcpe\NetworkBinaryStream;

@@ -3,7 +3,7 @@
 namespace synapsepm\network\protocol\spp;
 
 interface SynapseInfo {
-    const CURRENT_PROTOCOL = 8;
+    const CURRENT_PROTOCOL = 10;
     const PROTOCOL_MAGIC = 0xbabe;
 
     const HEARTBEAT_PACKET = 0x01;

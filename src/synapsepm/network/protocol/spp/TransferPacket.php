@@ -3,7 +3,7 @@ namespace synapsepm\network\protocol\spp;
 
 use pocketmine\utils\UUID;
 
-class TransferPacket extends SynapseDataPacket {
+class TransferPacket extends \synapsepm\network\protocol\spp\SynapseDataPacket {
 
     const NETWORK_ID = SynapseInfo::TRANSFER_PACKET;
     public $uuid;
