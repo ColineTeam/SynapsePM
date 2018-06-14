@@ -4,8 +4,6 @@ namespace synapsepm\network;
 use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\SourceInterface;
-use pocketmine\Server;
-use pocketmine\utils\Binary;
 use synapsepm\network\protocol\spp\RedirectPacket;
 use synapsepm\network\protocol\spp\SynapseInfo;
 use synapsepm\network\SynapseInterface;
@@ -37,7 +35,8 @@ class SynLibInterface implements SourceInterface {
     }
 
     public function putPacket(Player $player, DataPacket $packet, bool $needACK = \false, bool $immediate = \true) {
-        if (!$player->isClosed()) {
+        if (!$player->isClosed() && ($packet instanceof \pocketmine\network\mcpe\protocol\LoginPacket) == false) {
+            var_dump($packet);
             $pk = new RedirectPacket();
             $pk->uuid = $player->getUniqueId();
             $pk->direct = $immediate;

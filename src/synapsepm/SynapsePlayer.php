@@ -40,7 +40,7 @@ class SynapsePlayer extends \pocketmine\Player {
             $pk->decode();
 //            var_dump($pk);
 //            $this->handleLogin($pk);
-            $this->sendDataPacket($pk);
+//            $this->sendDataPacket($pk);
         }
     }
 
